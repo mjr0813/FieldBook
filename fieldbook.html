@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FieldBook</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0ede6;
+    --surface: #ffffff;
+    --surface2: #f7f5f0;
+    --surface3: #eeeae2;
+    --border: #d8d4cb;
+    --border2: #e4e0d8;
+    --accent: #2a5c84;
+    --accent-light: #e6f0f7;
+    --success: #2a6348;
+    --danger: #7a2a2a;
+    --danger-light: #f2e6e6;
+    --text: #1c1a16;
+    --text2: #46423c;
+    --muted: #8c887e;
+    --shadow-sm: 0 1px 2px rgba(28,26,22,0.06), 0 1px 3px rgba(28,26,22,0.04);
+    --shadow: 0 2px 6px rgba(28,26,22,0.08), 0 1px 3px rgba(28,26,22,0.06);
+    --shadow-lg: 0 8px 24px rgba(28,26,22,0.12), 0 2px 8px rgba(28,26,22,0.08);
+    --sidebar-collapsed: 52px;
+    --sidebar-expanded: 200px;
+    --header-h: 52px;
+    --radius-sm: 7px;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-ui: 'Source Sans 3', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ── LAUNCH SCREEN ── */
+  #launch {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 0;
+  }
+  #launch.hidden { display: none; }
+
+  .launch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 44px 48px 40px;
+    width: 380px;
+    max-width: 90vw;
+    display: flex; flex-direction: column; align-items: center; gap: 28px;
+  }
+  .launch-brand {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .launch-suite {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .launch-title {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .launch-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border2);
+  }
+  .launch-actions {
+    width: 100%;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .btn-launch-primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-launch-primary:active { background: #1e4464; transform: scale(0.99); }
+  .btn-launch-secondary {
+    width: 100%;
+    padding: 13px;
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-launch-secondary:active { background: var(--surface3); }
+  .btn-launch-secondary.disabled {
+    opacity: 0.4; pointer-events: none;
+  }
+  .launch-resume-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: -4px;
+  }
+
+  /* ── APP SHELL ── */
+  #app {
+    display: none;
+    height: 100vh;
+    flex-direction: column;
+  }
+  #app.visible { display: flex; }
+
+  /* ── HEADER ── */
+  #header {
+    height: var(--header-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center;
+    padding: 0 14px 0 0;
+    gap: 0;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .header-sidebar-spacer {
+    width: var(--sidebar-collapsed);
+    flex-shrink: 0;
+    transition: width 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sidebar-expanded .header-sidebar-spacer { width: var(--sidebar-expanded); }
+  .header-brand {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+  .header-address {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s;
+  }
+  .header-address:hover { background: var(--surface2); }
+  .header-address.empty { color: var(--muted); font-style: italic; }
+  .header-actions {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .btn-header {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-header:active { background: var(--surface3); }
+  .btn-header.danger { color: var(--danger); border-color: #d8b4b4; }
+  .btn-header.danger:active { background: var(--danger-light); }
+  .btn-header svg { flex-shrink: 0; }
+
+  /* ── BODY LAYOUT ── */
+  #body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-collapsed);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width 0.2s ease;
+    z-index: 50;
+  }
+  #sidebar.expanded { width: var(--sidebar-expanded); }
+
+  .sidebar-toggle {
+    height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border2);
+    color: var(--muted);
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .sidebar-toggle:hover { color: var(--text2); background: var(--surface2); }
+
+  .sidebar-tabs {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px 0;
+  }
+  .sidebar-tabs::-webkit-scrollbar { width: 3px; }
+  .sidebar-tabs::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .sidebar-tab {
+    display: flex; align-items: center;
+    height: 42px;
+    padding: 0 14px;
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s;
+    border-left: 2px solid transparent;
+    gap: 12px;
+    position: relative;
+  }
+  .sidebar-tab:hover { color: var(--text2); background: var(--surface2); }
+  .sidebar-tab.active {
+    color: var(--accent);
+    background: var(--accent-light);
+    border-left-color: var(--accent);
+  }
+  .sidebar-tab svg { flex-shrink: 0; }
+  .tab-label { opacity: 0; transition: opacity 0.15s; white-space: nowrap; }
+  #sidebar.expanded .tab-label { opacity: 1; }
+
+  .sidebar-section-divider {
+    height: 1px;
+    background: var(--border2);
+    margin: 4px 10px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  #main {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tab-panel {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .tab-panel.active { display: flex; }
+  .tab-panel::-webkit-scrollbar { width: 5px; }
+  .tab-panel::-webkit-scrollbar-track { background: transparent; }
+  .tab-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── PANEL HEADER ── */
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .panel-title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .panel-actions { display: flex; gap: 8px; }
+
+  /* ── BUILDING TABS (within a panel) ── */
+  .building-tabs-bar {
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .building-tab-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .building-tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .building-tab-btn .del-building {
+    width: 14px; height: 14px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+  .building-tab-btn.active .del-building { color: rgba(255,255,255,0.8); }
+  .building-tab-btn .del-building:hover { opacity: 1; }
+  .btn-add-building {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-add-building:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+
+  /* ── FORM SECTIONS ── */
+  .form-section {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .form-section-header {
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .form-section-header:active { background: var(--surface3); }
+  .form-section-title {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text2);
+  }
+  .form-section-chevron {
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .form-section.collapsed .form-section-chevron { transform: rotate(-90deg); }
+  .form-section-body {
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+  }
+  .form-section.collapsed .form-section-body { display: none; }
+  .form-section-body.single-col { grid-template-columns: 1fr; }
+  .form-section-body.three-col { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── FORM FIELDS ── */
+  .field {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .field.span2 { grid-column: span 2; }
+  .field.span3 { grid-column: span 3; }
+  .field label {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field input[type="date"],
+  .field select,
+  .field textarea {
+    padding: 7px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(42,92,132,0.12);
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238c887e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  /* Checkbox groups */
+  .check-group {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 6px 0 2px;
+  }
+  .check-item {
+    display: flex; align-items: center; gap: 5px;
+    cursor: pointer;
+  }
+  .check-item input[type="checkbox"] {
+    width: 15px; height: 15px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .check-item span {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  /* Radio groups */
+  .radio-group {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 4px 0;
+  }
+  .radio-item {
+    display: flex; align-items: center; gap: 5px;
+    cursor: pointer;
+  }
+  .radio-item input[type="radio"] {
+    width: 15px; height: 15px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .radio-item span {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  /* Building name inline edit */
+  .building-name-wrap {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .building-name-input {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 3px 7px;
+    background: transparent;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    width: 180px;
+  }
+  .building-name-input:hover { border-color: var(--border); background: var(--surface2); }
+  .building-name-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(42,92,132,0.1); }
+
+  /* ── PLACEHOLDER PANEL ── */
+  .placeholder-panel {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+  }
+  .placeholder-panel svg { opacity: 0.3; }
+  .placeholder-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    color: var(--text2);
+    opacity: 0.5;
+  }
+  .placeholder-sub {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── SUBJECT PANEL ── */
+  .subject-panel .form-section-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ── NOTES PANEL ── */
+  #notes-panel {
+    padding: 16px;
+    gap: 12px;
+  }
+  .notes-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 8px 12px;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+  }
+  .notes-tool-group {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .notes-tool-sep {
+    width: 1px; height: 22px;
+    background: var(--border2);
+    margin: 0 4px;
+  }
+  .btn-tool {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .btn-tool:hover { background: var(--surface2); border-color: var(--border); }
+  .btn-tool.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .tool-size-btn {
+    width: auto; padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .color-swatch {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .color-swatch.active { border-color: var(--text2); transform: scale(1.15); }
+  .notes-page-nav {
+    display: flex; align-items: center; gap: 8px;
+    margin-left: auto;
+  }
+  .page-indicator {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .btn-page-nav {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text2);
+    transition: background 0.15s;
+    font-size: 14px;
+  }
+  .btn-page-nav:disabled { opacity: 0.3; pointer-events: none; }
+  .btn-add-page {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-add-page:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  .notes-canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: auto;
+    min-height: 0;
+  }
+  #notes-canvas {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    touch-action: none;
+    cursor: crosshair;
+    display: block;
+  }
+
+  /* ── MODALS ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(28,26,22,0.35);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-backdrop.visible { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 28px 32px 24px;
+    width: 460px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: scale(0.96) translateY(6px);
+    transition: transform 0.2s;
+  }
+  .modal-backdrop.visible .modal { transform: scale(1) translateY(0); }
+  .modal-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .modal-fields {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .modal-actions {
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .btn-modal-primary {
+    padding: 9px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-modal-primary:active { background: #1e4464; }
+  .btn-modal-secondary {
+    padding: 9px 16px;
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-modal-secondary:active { background: var(--surface3); }
+
+  /* ── CONFIRM DIALOG ── */
+  .confirm-dialog .modal { width: 340px; }
+  .confirm-msg {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  /* ── EXPORT MODAL ── */
+  .export-modal .modal { width: 560px; }
+  .export-preview {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text2);
+    white-space: pre-wrap;
+    max-height: 340px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+  }
+
+  /* ── SCROLLBARS IN MODALS ── */
+  .modal::-webkit-scrollbar { width: 4px; }
+  .modal::-webkit-scrollbar-track { background: transparent; }
+  .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LAUNCH SCREEN
+══════════════════════════════════════════ -->
+<div id="launch">
+  <div class="launch-card">
+    <div class="launch-brand">
+      <span class="launch-suite">FieldSuite</span>
+      <span class="launch-title">FieldBook</span>
+    </div>
+    <div class="launch-divider"></div>
+    <div class="launch-actions">
+      <button class="btn-launch-primary" id="btn-new-inspection">New Inspection</button>
+      <button class="btn-launch-secondary" id="btn-resume" disabled>Resume Inspection</button>
+      <div class="launch-resume-meta" id="resume-meta"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="header-sidebar-spacer" id="header-spacer"></div>
+    <span class="header-brand">FieldBook</span>
+    <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
+    <div class="header-actions">
+      <button class="btn-header" id="btn-export-text">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
+        Export
+      </button>
+      <button class="btn-header" id="btn-archive">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="12" height="9" rx="1"/><path d="M1 3h14M6 9h4"/></svg>
+        Archive
+      </button>
+      <button class="btn-header danger" id="btn-close-session">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6"/></svg>
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div id="body">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+      </div>
+      <div class="sidebar-tabs" id="sidebar-tabs">
+        <!-- Subject always on top -->
+        <div class="sidebar-tab active" data-panel="subject">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
+          <span class="tab-label">Subject</span>
+        </div>
+        <div class="sidebar-section-divider"></div>
+
+        <div class="sidebar-tab" data-panel="industrial">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 13V7l4-3 3 2 4-3v10H1z"/><rect x="6" y="9" width="3" height="4"/></svg>
+          <span class="tab-label">Industrial</span>
+        </div>
+        <div class="sidebar-tab" data-panel="selfstorage">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="5" width="14" height="9" rx="1"/><path d="M1 8h14M5 5V3h6v2"/><path d="M7 11h2"/></svg>
+          <span class="tab-label">Self Storage</span>
+        </div>
+        <div class="sidebar-tab" data-panel="gasstation">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="8" height="9" rx="1"/><path d="M10 7h2a1 1 0 011 1v2a1 1 0 001 1V5l-2-2"/><path d="M4 9h4"/></svg>
+          <span class="tab-label">Gas Station</span>
+        </div>
+        <div class="sidebar-tab" data-panel="retail">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 5h14l-1.5 6H2.5L1 5z"/><path d="M4 5L5 2h6l1 3"/><path d="M6 10v4M10 10v4"/></svg>
+          <span class="tab-label">Retail</span>
+        </div>
+        <div class="sidebar-tab" data-panel="restaurant">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 2v5a3 3 0 006 0V2"/><path d="M8 9v5M3 2v5M11 2v5"/></svg>
+          <span class="tab-label">Restaurant</span>
+        </div>
+        <div class="sidebar-tab" data-panel="office">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M2 6h12M6 2v12M9 9h3M9 12h2"/></svg>
+          <span class="tab-label">Office</span>
+        </div>
+        <div class="sidebar-tab" data-panel="medical">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M8 5v6M5 8h6"/></svg>
+          <span class="tab-label">Medical</span>
+        </div>
+        <div class="sidebar-tab" data-panel="institutional">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 14h14M3 14V7M13 14V7M8 2l6 5H2l6-5z"/><rect x="6" y="9" width="4" height="5"/></svg>
+          <span class="tab-label">Institutional</span>
+        </div>
+        <div class="sidebar-tab" data-panel="campground">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L2 13h12L8 2z"/><path d="M8 13V9"/></svg>
+          <span class="tab-label">Camp/Rec</span>
+        </div>
+        <div class="sidebar-tab" data-panel="agricultural">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 13c0-5 3-9 6-9s6 4 6 9"/><path d="M8 4V2M5 7l3-3 3 3"/></svg>
+          <span class="tab-label">Agricultural</span>
+        </div>
+        <div class="sidebar-tab" data-panel="aptcomplex">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1"/><path d="M2 7h12M6 3v11M5 10h1M5 13h1M9 10h1M9 13h1"/></svg>
+          <span class="tab-label">Apt Complex</span>
+        </div>
+        <div class="sidebar-tab" data-panel="aptunit">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="10" height="12" rx="1"/><path d="M6 3v12M3 8h10M7 6h2M7 11h2"/></svg>
+          <span class="tab-label">Apt Unit</span>
+        </div>
+        <div class="sidebar-tab" data-panel="sfr">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8l7-6 7 6M3 7v7h10V7"/><rect x="6" y="9" width="4" height="5"/></svg>
+          <span class="tab-label">SFR</span>
+        </div>
+
+        <div class="sidebar-section-divider"></div>
+        <div class="sidebar-tab" data-panel="notes">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9l6 0M5 12h3"/></svg>
+          <span class="tab-label">Notes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+
+      <!-- SUBJECT PANEL -->
+      <div class="tab-panel active" id="panel-subject">
+        <div class="panel-header">
+          <span class="panel-title">Subject Property</span>
+        </div>
+        <div class="form-section">
+          <div class="form-section-header" onclick="toggleSection(this)">
+            <span class="form-section-title">Identification</span>
+            <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+          </div>
+          <div class="form-section-body">
+            <div class="field span2">
+              <label>Property Address</label>
+              <input type="text" data-key="subject.address" placeholder="Street address">
+            </div>
+            <div class="field">
+              <label>City</label>
+              <input type="text" data-key="subject.city" placeholder="City">
+            </div>
+            <div class="field">
+              <label>State / Zip</label>
+              <input type="text" data-key="subject.state_zip" placeholder="WI 54151">
+            </div>
+            <div class="field">
+              <label>APN / Parcel ID</label>
+              <input type="text" data-key="subject.apn" placeholder="Parcel number">
+            </div>
+            <div class="field">
+              <label>County</label>
+              <input type="text" data-key="subject.county" placeholder="County">
+            </div>
+            <div class="field">
+              <label>Legal Description</label>
+              <input type="text" data-key="subject.legal" placeholder="Brief legal description">
+            </div>
+            <div class="field">
+              <label>Property Type</label>
+              <input type="text" data-key="subject.prop_type" placeholder="e.g. Industrial, SFR">
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-header" onclick="toggleSection(this)">
+            <span class="form-section-title">Inspection Info</span>
+            <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+          </div>
+          <div class="form-section-body">
+            <div class="field">
+              <label>Inspection Date</label>
+              <input type="date" data-key="subject.inspection_date">
+            </div>
+            <div class="field">
+              <label>Appraiser</label>
+              <input type="text" data-key="subject.appraiser" placeholder="Name">
+            </div>
+            <div class="field">
+              <label>Client</label>
+              <input type="text" data-key="subject.client" placeholder="Client or lender">
+            </div>
+            <div class="field">
+              <label>File / Order No.</label>
+              <input type="text" data-key="subject.file_no" placeholder="File number">
+            </div>
+            <div class="field span2">
+              <label>Notes</label>
+              <textarea data-key="subject.notes" placeholder="General inspection notes…"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-header" onclick="toggleSection(this)">
+            <span class="form-section-title">Site</span>
+            <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+          </div>
+          <div class="form-section-body">
+            <div class="field">
+              <label>Site Area</label>
+              <input type="text" data-key="subject.site_area" placeholder="e.g. 0.50 ac / 21,780 sf">
+            </div>
+            <div class="field">
+              <label>Shape</label>
+              <select data-key="subject.site_shape">
+                <option value="">—</option>
+                <option>Rectangular</option>
+                <option>Irregular</option>
+                <option>Triangular</option>
+                <option>Flag Lot</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Zoning</label>
+              <input type="text" data-key="subject.zoning" placeholder="e.g. C-1, R-1">
+            </div>
+            <div class="field">
+              <label>Zoning Description</label>
+              <input type="text" data-key="subject.zoning_desc" placeholder="e.g. General Commercial">
+            </div>
+            <div class="field">
+              <label>Street Surface</label>
+              <select data-key="subject.street_surface">
+                <option value="">—</option>
+                <option>Asphalt</option>
+                <option>Concrete</option>
+                <option>Gravel</option>
+                <option>Dirt</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Alley</label>
+              <select data-key="subject.alley">
+                <option value="">—</option>
+                <option>None</option>
+                <option>Asphalt</option>
+                <option>Concrete</option>
+                <option>Gravel</option>
+              </select>
+            </div>
+            <div class="field span2">
+              <label>Utilities</label>
+              <div class="check-group">
+                <label class="check-item"><input type="checkbox" data-key="subject.util_electric"><span>Electric</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_gas"><span>Gas</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_water"><span>Water</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_sewer"><span>Sewer</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_well"><span>Well</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_septic"><span>Septic</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_telephone"><span>Telephone</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_cable"><span>Cable/Fiber</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SFR PANEL -->
+      <div class="tab-panel" id="panel-sfr">
+        <div class="panel-header">
+          <span class="panel-title">SFR</span>
+          <div class="panel-actions">
+            <button class="btn-header" id="sfr-add-building" onclick="addBuilding('sfr')">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              Add Building
+            </button>
+          </div>
+        </div>
+        <div class="building-tabs-bar" id="sfr-building-tabs"></div>
+        <div id="sfr-buildings"></div>
+      </div>
+
+      <!-- PLACEHOLDER PANELS -->
+      <div class="tab-panel" id="panel-industrial"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><path d="M1 13V7l4-3 3 2 4-3v10H1z"/></svg><div class="placeholder-title">Industrial</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-selfstorage"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="1" y="5" width="14" height="9" rx="1"/><path d="M1 8h14M5 5V3h6v2"/></svg><div class="placeholder-title">Self Storage</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-gasstation"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="5" width="8" height="9" rx="1"/><path d="M10 7h2a1 1 0 011 1v2"/></svg><div class="placeholder-title">Gas Station</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-retail"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><path d="M1 5h14l-1.5 6H2.5L1 5z"/></svg><div class="placeholder-title">Retail</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-restaurant"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><path d="M5 2v5a3 3 0 006 0V2"/></svg><div class="placeholder-title">Restaurant</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-office"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M2 6h12M6 2v12"/></svg><div class="placeholder-title">Office</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-medical"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M8 5v6M5 8h6"/></svg><div class="placeholder-title">Medical</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-institutional"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><path d="M1 14h14M3 14V7M13 14V7M8 2l6 5H2l6-5z"/></svg><div class="placeholder-title">Institutional</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-campground"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 2L2 13h12L8 2z"/></svg><div class="placeholder-title">Campground / Recreational</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-agricultural"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><path d="M2 13c0-5 3-9 6-9s6 4 6 9"/></svg><div class="placeholder-title">Agricultural</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-aptcomplex"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="12" height="11" rx="1"/><path d="M2 7h12M6 3v11"/></svg><div class="placeholder-title">Apartment Complex</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+      <div class="tab-panel" id="panel-aptunit"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="10" height="12" rx="1"/><path d="M6 3v12M3 8h10"/></svg><div class="placeholder-title">Apartment Unit</div><div class="placeholder-sub">Coming in a future build</div></div></div>
+
+      <!-- NOTES PANEL -->
+      <div class="tab-panel" id="notes-panel" id="panel-notes">
+        <div class="notes-toolbar">
+          <div class="notes-tool-group">
+            <button class="btn-tool active" id="tool-pen" title="Pen" onclick="setTool('pen')">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-8 8H3v-3l8-8z"/><path d="M9 4l3 3"/></svg>
+            </button>
+            <button class="btn-tool" id="tool-eraser" title="Eraser" onclick="setTool('eraser')">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 13l4-4 5 5H2zM6 9L11 4l3 3-5 5"/></svg>
+            </button>
+          </div>
+          <div class="notes-tool-sep"></div>
+          <div class="notes-tool-group" id="stroke-sizes">
+            <button class="btn-tool tool-size-btn active" data-size="2" onclick="setSize(2)">S</button>
+            <button class="btn-tool tool-size-btn" data-size="4" onclick="setSize(4)">M</button>
+            <button class="btn-tool tool-size-btn" data-size="7" onclick="setSize(7)">L</button>
+          </div>
+          <div class="notes-tool-sep"></div>
+          <div class="notes-tool-group" id="color-swatches">
+            <div class="color-swatch active" data-color="#1c1a16" style="background:#1c1a16" onclick="setColor('#1c1a16')"></div>
+            <div class="color-swatch" data-color="#2a5c84" style="background:#2a5c84" onclick="setColor('#2a5c84')"></div>
+            <div class="color-swatch" data-color="#7a2a2a" style="background:#7a2a2a" onclick="setColor('#7a2a2a')"></div>
+            <div class="color-swatch" data-color="#2a6348" style="background:#2a6348" onclick="setColor('#2a6348')"></div>
+            <div class="color-swatch" data-color="#8c887e" style="background:#8c887e" onclick="setColor('#8c887e')"></div>
+          </div>
+          <div class="notes-tool-sep"></div>
+          <button class="btn-tool" title="Clear page" onclick="clearPage()">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M5 4V3h6v1M6 7v5M10 7v5M4 4l.5 9h7L12 4"/></svg>
+          </button>
+          <div class="notes-tool-sep"></div>
+          <button class="btn-tool" title="Export page as image" onclick="exportNotePage()">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
+          </button>
+          <div class="notes-page-nav">
+            <button class="btn-page-nav" id="btn-prev-page" onclick="prevPage()">‹</button>
+            <span class="page-indicator" id="page-indicator">1 / 1</span>
+            <button class="btn-page-nav" id="btn-next-page" onclick="nextPage()">›</button>
+            <button class="btn-add-page" onclick="addNotePage()">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              Add Page
+            </button>
+          </div>
+        </div>
+        <div class="notes-canvas-wrap">
+          <canvas id="notes-canvas"></canvas>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /body -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-backdrop" id="modal-new">
+  <div class="modal">
+    <div class="modal-title">New Inspection</div>
+    <div class="modal-fields">
+      <div class="field">
+        <label>Property Address</label>
+        <input type="text" id="new-address" placeholder="123 Main Street">
+      </div>
+      <div class="field">
+        <label>City, State</label>
+        <input type="text" id="new-city" placeholder="Peshtigo, WI">
+      </div>
+      <div class="field">
+        <label>Inspection Date</label>
+        <input type="date" id="new-date">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-new')">Cancel</button>
+      <button class="btn-modal-primary" onclick="confirmNewInspection()">Begin Inspection</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop confirm-dialog" id="modal-confirm-close">
+  <div class="modal">
+    <div class="modal-title">Close Inspection</div>
+    <div class="confirm-msg">Archive and close this inspection? Your data will be saved as a <strong>.fbk</strong> file. The active session in this browser will be cleared.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-close')">Cancel</button>
+      <button class="btn-modal-primary" onclick="doArchiveAndClose()" style="background:var(--danger)">Archive &amp; Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop export-modal" id="modal-export">
+  <div class="modal">
+    <div class="modal-title">Export — Human Readable</div>
+    <pre class="export-preview" id="export-preview"></pre>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-export')">Close</button>
+      <button class="btn-modal-primary" onclick="copyExport()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop confirm-dialog" id="modal-confirm-new">
+  <div class="modal">
+    <div class="modal-title">Start New Inspection?</div>
+    <div class="confirm-msg">There is an existing inspection in progress. Starting a new one will permanently clear the current session. Archive first if you want to keep it.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-new')">Cancel</button>
+      <button class="btn-modal-primary" onclick="proceedNew()" style="background:var(--danger)">Clear &amp; Start New</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const LS_KEY = 'fieldbook_current';
+let state = null; // null = no session
+
+// ── SFR building state ──
+// state.sfr.buildings = [ { id, name, data:{} }, ... ]
+// state.sfr.activeBuildingId
+
+// ── Notes state ──
+// state.notes.pages = [ dataURL, ... ]
+// state.notes.activePage = 0
+
+// ── Generic data ──
+// state.fields = { [key]: value }
+
+// ══════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════
+function saveState() {
+  if (!state) return;
+  // Capture notes canvas into state before save
+  captureNotesPage();
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(LS_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+// ══════════════════════════════════════════
+// LAUNCH
+// ══════════════════════════════════════════
+function initLaunch() {
+  const saved = loadState();
+  const btnResume = document.getElementById('btn-resume');
+  const resumeMeta = document.getElementById('resume-meta');
+  if (saved) {
+    btnResume.classList.remove('disabled');
+    btnResume.disabled = false;
+    const addr = saved.fields?.['subject.address'] || 'Unknown address';
+    const date = saved.fields?.['subject.inspection_date'] || '';
+    resumeMeta.textContent = addr + (date ? ' · ' + date : '');
+  }
+  document.getElementById('btn-new-inspection').addEventListener('click', () => {
+    if (saved) {
+      openModal('modal-confirm-new');
+    } else {
+      openNewInspectionModal();
+    }
+  });
+  btnResume.addEventListener('click', () => {
+    if (!saved) return;
+    state = saved;
+    startApp();
+  });
+  // Set today's date in new modal
+  document.getElementById('new-date').value = new Date().toISOString().slice(0,10);
+}
+
+function proceedNew() {
+  closeModal('modal-confirm-new');
+  openNewInspectionModal();
+}
+
+function openNewInspectionModal() {
+  document.getElementById('new-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('new-address').value = '';
+  document.getElementById('new-city').value = '';
+  openModal('modal-new');
+}
+
+function confirmNewInspection() {
+  const addr = document.getElementById('new-address').value.trim();
+  const city = document.getElementById('new-city').value.trim();
+  const date = document.getElementById('new-date').value;
+  state = createFreshState();
+  if (addr) state.fields['subject.address'] = addr;
+  if (city) state.fields['subject.city'] = city;
+  if (date) state.fields['subject.inspection_date'] = date;
+  closeModal('modal-new');
+  saveState();
+  startApp();
+}
+
+function createFreshState() {
+  return {
+    version: 1,
+    fields: {},
+    sfr: {
+      buildings: [{ id: uid(), name: 'Building 1', fields: {} }],
+      activeBuildingId: null
+    },
+    notes: {
+      pages: [null], // null = blank page (not yet drawn)
+      activePage: 0
+    }
+  };
+}
+
+// ══════════════════════════════════════════
+// APP START
+// ══════════════════════════════════════════
+function startApp() {
+  document.getElementById('launch').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  // Set activeBuildingId if missing
+  if (!state.sfr.activeBuildingId && state.sfr.buildings.length > 0) {
+    state.sfr.activeBuildingId = state.sfr.buildings[0].id;
+  }
+  bindAllFields();
+  populateAllFields();
+  renderSFRBuildingTabs();
+  renderSFRBuilding();
+  initNotesCanvas();
+  updateHeaderAddress();
+  setupSidebarNav();
+  setupHeaderActions();
+}
+
+// ══════════════════════════════════════════
+// SIDEBAR NAV
+// ══════════════════════════════════════════
+function setupSidebarNav() {
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    const exp = sidebar.classList.toggle('expanded');
+    document.getElementById('app').classList.toggle('sidebar-expanded', exp);
+  });
+  document.querySelectorAll('.sidebar-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const panel = tab.dataset.panel;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById('panel-' + panel) || document.getElementById('notes-panel');
+      if (target) target.classList.add('active');
+      if (panel === 'notes') resizeNotesCanvas();
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+// HEADER
+// ══════════════════════════════════════════
+function updateHeaderAddress() {
+  const el = document.getElementById('header-address');
+  const addr = state?.fields?.['subject.address'];
+  const city = state?.fields?.['subject.city'];
+  const date = state?.fields?.['subject.inspection_date'];
+  if (addr) {
+    let txt = addr;
+    if (city) txt += ', ' + city;
+    if (date) txt += ' · ' + date;
+    el.textContent = txt;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = 'No address — click Subject to set';
+    el.classList.add('empty');
+  }
+}
+
+function setupHeaderActions() {
+  document.getElementById('header-address').addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('[data-panel="subject"]').classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-subject').classList.add('active');
+  });
+  document.getElementById('btn-archive').addEventListener('click', doArchive);
+  document.getElementById('btn-close-session').addEventListener('click', () => openModal('modal-confirm-close'));
+  document.getElementById('btn-export-text').addEventListener('click', openExport);
+}
+
+// ══════════════════════════════════════════
+// FORM FIELD BINDING
+// ══════════════════════════════════════════
+function bindAllFields() {
+  // Subject fields
+  document.querySelectorAll('#panel-subject [data-key]').forEach(el => {
+    el.addEventListener('input', () => {
+      if (!state) return;
+      const key = el.dataset.key;
+      if (el.type === 'checkbox') {
+        state.fields[key] = el.checked;
+      } else {
+        state.fields[key] = el.value;
+      }
+      if (key === 'subject.address' || key === 'subject.city' || key === 'subject.inspection_date') {
+        updateHeaderAddress();
+      }
+      saveState();
+    });
+    if (el.type === 'checkbox') {
+      el.addEventListener('change', () => {
+        if (!state) return;
+        state.fields[el.dataset.key] = el.checked;
+        saveState();
+      });
+    }
+  });
+}
+
+function populateAllFields() {
+  document.querySelectorAll('#panel-subject [data-key]').forEach(el => {
+    const val = state.fields[el.dataset.key];
+    if (val === undefined) return;
+    if (el.type === 'checkbox') el.checked = !!val;
+    else el.value = val;
+  });
+}
+
+// ══════════════════════════════════════════
+// SFR BUILDINGS
+// ══════════════════════════════════════════
+function uid() {
+  return Math.random().toString(36).slice(2,9);
+}
+
+function addBuilding(type) {
+  if (type === 'sfr') {
+    const n = state.sfr.buildings.length + 1;
+    const b = { id: uid(), name: 'Building ' + n, fields: {} };
+    state.sfr.buildings.push(b);
+    state.sfr.activeBuildingId = b.id;
+    renderSFRBuildingTabs();
+    renderSFRBuilding();
+    saveState();
+  }
+}
+
+function setActiveBuilding(id) {
+  captureActiveBuildingFields();
+  state.sfr.activeBuildingId = id;
+  renderSFRBuildingTabs();
+  renderSFRBuilding();
+}
+
+function deleteBuilding(id) {
+  if (state.sfr.buildings.length <= 1) return; // keep at least one
+  state.sfr.buildings = state.sfr.buildings.filter(b => b.id !== id);
+  if (state.sfr.activeBuildingId === id) {
+    state.sfr.activeBuildingId = state.sfr.buildings[0].id;
+  }
+  renderSFRBuildingTabs();
+  renderSFRBuilding();
+  saveState();
+}
+
+function captureActiveBuildingFields() {
+  const b = activeBuilding();
+  if (!b) return;
+  document.querySelectorAll('#sfr-buildings [data-bkey]').forEach(el => {
+    const k = el.dataset.bkey;
+    if (el.type === 'checkbox') b.fields[k] = el.checked;
+    else b.fields[k] = el.value;
+  });
+}
+
+function activeBuilding() {
+  return state.sfr.buildings.find(b => b.id === state.sfr.activeBuildingId);
+}
+
+function renderSFRBuildingTabs() {
+  const bar = document.getElementById('sfr-building-tabs');
+  bar.innerHTML = '';
+  state.sfr.buildings.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'building-tab-btn' + (b.id === state.sfr.activeBuildingId ? ' active' : '');
+    btn.innerHTML = `<span class="bname-label">${escHtml(b.name)}</span>`;
+    if (state.sfr.buildings.length > 1) {
+      const del = document.createElement('span');
+      del.className = 'del-building';
+      del.textContent = '×';
+      del.title = 'Remove';
+      del.addEventListener('click', e => { e.stopPropagation(); deleteBuilding(b.id); });
+      btn.appendChild(del);
+    }
+    btn.addEventListener('click', () => setActiveBuilding(b.id));
+    bar.appendChild(btn);
+  });
+}
+
+function renderSFRBuilding() {
+  const b = activeBuilding();
+  const container = document.getElementById('sfr-buildings');
+  container.innerHTML = '';
+  if (!b) return;
+
+  // Building name edit
+  const nameWrap = document.createElement('div');
+  nameWrap.className = 'building-name-wrap';
+  nameWrap.innerHTML = `<input class="building-name-input" value="${escHtml(b.name)}" placeholder="Building name" title="Edit building name">`;
+  const nameInput = nameWrap.querySelector('input');
+  nameInput.addEventListener('input', () => {
+    b.name = nameInput.value;
+    // Update tab label live
+    document.querySelectorAll('.building-tab-btn').forEach((btn, i) => {
+      if (state.sfr.buildings[i]?.id === b.id) {
+        btn.querySelector('.bname-label').textContent = b.name || 'Building';
+      }
+    });
+    saveState();
+  });
+  container.appendChild(nameWrap);
+
+  // Render SFR sections
+  container.appendChild(makeSFRSections(b));
+
+  // Populate building fields
+  container.querySelectorAll('[data-bkey]').forEach(el => {
+    const val = b.fields[el.dataset.bkey];
+    if (val === undefined) return;
+    if (el.type === 'checkbox') el.checked = !!val;
+    else el.value = val;
+  });
+
+  // Bind building fields
+  container.querySelectorAll('[data-bkey]').forEach(el => {
+    const evts = el.type === 'checkbox' ? ['change'] : ['input'];
+    evts.forEach(evt => el.addEventListener(evt, () => {
+      b.fields[el.dataset.bkey] = el.type === 'checkbox' ? el.checked : el.value;
+      saveState();
+    }));
+  });
+}
+
+function makeSFRSections(b) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:14px;';
+  wrap.innerHTML = `
+  <!-- Foundation -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Foundation</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body">
+      <div class="field">
+        <label>Foundation Type</label>
+        <select data-bkey="foundation_type">
+          <option value="">—</option>
+          <option>Concrete Slab</option>
+          <option>Crawl Space</option>
+          <option>Full Basement</option>
+          <option>Partial Basement</option>
+          <option>Piers/Posts</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="foundation_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field span2">
+        <label>Foundation Notes</label>
+        <textarea data-bkey="foundation_notes" rows="2" placeholder="Cracks, settlement, moisture, etc."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exterior -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Exterior Description</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body">
+      <div class="field">
+        <label>Exterior Walls</label>
+        <select data-bkey="ext_walls">
+          <option value="">—</option>
+          <option>Vinyl Siding</option><option>Wood Siding</option><option>Fiber Cement</option>
+          <option>Brick</option><option>Stone</option><option>Stucco</option>
+          <option>Aluminum Siding</option><option>Log</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="ext_walls_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Roof Surface</label>
+        <select data-bkey="roof_surface">
+          <option value="">—</option>
+          <option>Asphalt Shingles</option><option>Metal</option><option>Wood Shakes</option>
+          <option>Tile</option><option>Flat/EPDM</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="roof_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Gutters / Downspouts</label>
+        <select data-bkey="gutters">
+          <option value="">—</option>
+          <option>Aluminum</option><option>Vinyl</option><option>Steel</option><option>None</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Window Type</label>
+        <select data-bkey="windows">
+          <option value="">—</option>
+          <option>Double Pane</option><option>Triple Pane</option><option>Single Pane</option><option>Storm</option>
+        </select>
+      </div>
+      <div class="field span2">
+        <label>Exterior Notes</label>
+        <textarea data-bkey="ext_notes" rows="2" placeholder="Observations, deferred maintenance…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interior -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Interior</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body">
+      <div class="field">
+        <label>Floors</label>
+        <select data-bkey="int_floors">
+          <option value="">—</option>
+          <option>Hardwood</option><option>Carpet</option><option>Tile</option>
+          <option>LVP/LVT</option><option>Laminate</option><option>Vinyl</option><option>Mixed</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="int_floors_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Walls</label>
+        <select data-bkey="int_walls">
+          <option value="">—</option>
+          <option>Drywall</option><option>Plaster</option><option>Paneling</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="int_walls_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Trim / Finish</label>
+        <select data-bkey="int_trim">
+          <option value="">—</option>
+          <option>Painted Wood</option><option>Stained Wood</option><option>Basic/Minimal</option><option>Custom</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="int_trim_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Bath(s) — Floors</label>
+        <select data-bkey="bath_floors">
+          <option value="">—</option>
+          <option>Tile</option><option>Vinyl</option><option>LVP</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Bath(s) — Walls</label>
+        <select data-bkey="bath_walls">
+          <option value="">—</option>
+          <option>Tile</option><option>Fiberglass</option><option>Drywall</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Kitchen Cabinets</label>
+        <select data-bkey="kit_cabinets">
+          <option value="">—</option>
+          <option>Wood</option><option>Painted Wood</option><option>Laminate</option><option>Custom</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Countertops</label>
+        <select data-bkey="kit_counters">
+          <option value="">—</option>
+          <option>Granite</option><option>Quartz</option><option>Laminate</option>
+          <option>Solid Surface</option><option>Tile</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field span2">
+        <label>Interior Notes</label>
+        <textarea data-bkey="int_notes" rows="2" placeholder="Updates, condition details, observations…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rooms -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Room Count</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body three-col">
+      <div class="field">
+        <label>Total Rooms</label>
+        <input type="number" data-bkey="rooms_total" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Bedrooms</label>
+        <input type="number" data-bkey="rooms_bed" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Bathrooms</label>
+        <input type="number" data-bkey="rooms_bath" min="0" step="0.5" placeholder="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Attic -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Attic</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body">
+      <div class="field">
+        <label>Access</label>
+        <select data-bkey="attic_access">
+          <option value="">—</option>
+          <option>None</option><option>Scuttle</option><option>Pull-down Stairs</option><option>Stairs</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Insulation</label>
+        <select data-bkey="attic_insulation">
+          <option value="">—</option>
+          <option>None</option><option>Blown-in</option><option>Batt</option><option>Spray Foam</option>
+        </select>
+      </div>
+      <div class="field span2">
+        <label>Attic Notes</label>
+        <textarea data-bkey="attic_notes" rows="2" placeholder="Ventilation, condition, observations…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heating & Cooling -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Heating &amp; Cooling</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body">
+      <div class="field">
+        <label>Heat Type</label>
+        <select data-bkey="heat_type">
+          <option value="">—</option>
+          <option>Forced Air</option><option>Hot Water/Boiler</option><option>Radiant Floor</option>
+          <option>Electric Baseboard</option><option>Heat Pump</option><option>None</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fuel</label>
+        <select data-bkey="heat_fuel">
+          <option value="">—</option>
+          <option>Gas</option><option>Electric</option><option>Oil</option><option>Propane</option><option>Wood</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Cooling</label>
+        <select data-bkey="cool_type">
+          <option value="">—</option>
+          <option>Central Air</option><option>Heat Pump</option><option>Window Units</option><option>None</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="hvac_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field span2">
+        <label>HVAC Notes</label>
+        <textarea data-bkey="hvac_notes" rows="2" placeholder="Age, updates, observations…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Amenities -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Amenities</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body single-col">
+      <div class="field">
+        <label>Amenities Present</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" data-bkey="amen_fireplace"><span>Fireplace</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_deck"><span>Deck</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_porch"><span>Porch</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_patio"><span>Patio</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_pool"><span>Pool</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_fence"><span>Fence</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_sprinkler"><span>Sprinkler System</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_security"><span>Security System</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_central_vac"><span>Central Vac</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="amen_intercom"><span>Intercom</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Amenity Notes</label>
+        <textarea data-bkey="amen_notes" rows="2" placeholder="Additional features, condition…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Car Storage -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Car Storage</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body">
+      <div class="field">
+        <label>Type</label>
+        <select data-bkey="garage_type">
+          <option value="">—</option>
+          <option>None</option>
+          <option>Attached Garage</option><option>Detached Garage</option>
+          <option>Carport</option><option>Built-in Garage</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Capacity (cars)</label>
+        <select data-bkey="garage_cars">
+          <option value="">—</option>
+          <option>1</option><option>2</option><option>3</option><option>4+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="garage_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Driveway Surface</label>
+        <select data-bkey="driveway">
+          <option value="">—</option>
+          <option>Concrete</option><option>Asphalt</option><option>Gravel</option><option>Dirt</option><option>Brick/Paver</option><option>None</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appliances -->
+  <div class="form-section">
+    <div class="form-section-header" onclick="toggleSection(this)">
+      <span class="form-section-title">Appliances</span>
+      <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
+    </div>
+    <div class="form-section-body single-col">
+      <div class="field">
+        <label>Appliances Included</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" data-bkey="appl_range"><span>Range</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_oven"><span>Oven (Wall)</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_dishwasher"><span>Dishwasher</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_refrigerator"><span>Refrigerator</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_microwave"><span>Microwave</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_disposal"><span>Disposal</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_washer"><span>Washer</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_dryer"><span>Dryer</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_hood"><span>Hood/Vent</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Appliance Notes</label>
+        <textarea data-bkey="appl_notes" rows="2" placeholder="Brand, age, condition…"></textarea>
+      </div>
+    </div>
+  </div>
+  `;
+  return wrap;
+}
+
+// ══════════════════════════════════════════
+// SECTION COLLAPSE
+// ══════════════════════════════════════════
+function toggleSection(header) {
+  header.closest('.form-section').classList.toggle('collapsed');
+}
+
+// ══════════════════════════════════════════
+// NOTES CANVAS
+// ══════════════════════════════════════════
+const PAGE_W = 744; // A4-ish, fits iPad well
+const PAGE_H = 1050;
+let notesTool = 'pen';
+let notesSize = 2;
+let notesColor = '#1c1a16';
+let notesDrawing = false;
+let notesLastX = 0, notesLastY = 0;
+let notesCtx = null;
+let notesCanvas = null;
+
+function initNotesCanvas() {
+  notesCanvas = document.getElementById('notes-canvas');
+  notesCanvas.width = PAGE_W;
+  notesCanvas.height = PAGE_H;
+  notesCtx = notesCanvas.getContext('2d');
+  restoreNotesPage();
+
+  notesCanvas.addEventListener('pointerdown', notesPointerDown, { passive: false });
+  notesCanvas.addEventListener('pointermove', notesPointerMove, { passive: false });
+  notesCanvas.addEventListener('pointerup', notesPointerUp);
+  notesCanvas.addEventListener('pointercancel', notesPointerUp);
+  updatePageIndicator();
+}
+
+function resizeNotesCanvas() {
+  // Canvas size stays fixed (PAGE_W x PAGE_H); CSS scales it
+  const wrap = document.querySelector('.notes-canvas-wrap');
+  if (!wrap) return;
+  const wrapW = wrap.clientWidth - 32;
+  const scale = Math.min(1, wrapW / PAGE_W);
+  notesCanvas.style.width = (PAGE_W * scale) + 'px';
+  notesCanvas.style.height = (PAGE_H * scale) + 'px';
+}
+
+window.addEventListener('resize', () => {
+  if (notesCanvas) resizeNotesCanvas();
+});
+
+function getCanvasPoint(e) {
+  const rect = notesCanvas.getBoundingClientRect();
+  const scaleX = PAGE_W / rect.width;
+  const scaleY = PAGE_H / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+function notesPointerDown(e) {
+  e.preventDefault();
+  notesCanvas.setPointerCapture(e.pointerId);
+  notesDrawing = true;
+  const p = getCanvasPoint(e);
+  notesLastX = p.x; notesLastY = p.y;
+  notesCtx.beginPath();
+  notesCtx.arc(p.x, p.y, currentRadius() / 2, 0, Math.PI * 2);
+  if (notesTool === 'eraser') {
+    notesCtx.globalCompositeOperation = 'destination-out';
+    notesCtx.fillStyle = 'rgba(0,0,0,1)';
+  } else {
+    notesCtx.globalCompositeOperation = 'source-over';
+    notesCtx.fillStyle = notesColor;
+  }
+  notesCtx.fill();
+}
+
+function notesPointerMove(e) {
+  if (!notesDrawing) return;
+  e.preventDefault();
+  const p = getCanvasPoint(e);
+  notesCtx.beginPath();
+  notesCtx.moveTo(notesLastX, notesLastY);
+  notesCtx.lineTo(p.x, p.y);
+  notesCtx.lineWidth = currentRadius();
+  notesCtx.lineCap = 'round';
+  notesCtx.lineJoin = 'round';
+  if (notesTool === 'eraser') {
+    notesCtx.globalCompositeOperation = 'destination-out';
+    notesCtx.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    notesCtx.globalCompositeOperation = 'source-over';
+    notesCtx.strokeStyle = notesColor;
+  }
+  notesCtx.stroke();
+  notesLastX = p.x; notesLastY = p.y;
+}
+
+function notesPointerUp(e) {
+  if (!notesDrawing) return;
+  notesDrawing = false;
+  notesCtx.globalCompositeOperation = 'source-over';
+  captureNotesPage();
+  saveState();
+}
+
+function currentRadius() {
+  return notesSize;
+}
+
+function captureNotesPage() {
+  if (!state || !notesCanvas) return;
+  const pg = state.notes.activePage;
+  state.notes.pages[pg] = notesCanvas.toDataURL('image/png');
+}
+
+function restoreNotesPage() {
+  if (!state || !notesCanvas) return;
+  notesCtx.clearRect(0, 0, PAGE_W, PAGE_H);
+  const pg = state.notes.activePage;
+  const dataURL = state.notes.pages[pg];
+  if (dataURL) {
+    const img = new Image();
+    img.onload = () => notesCtx.drawImage(img, 0, 0);
+    img.src = dataURL;
+  }
+  setTimeout(resizeNotesCanvas, 50);
+}
+
+function setTool(t) {
+  notesTool = t;
+  document.getElementById('tool-pen').classList.toggle('active', t === 'pen');
+  document.getElementById('tool-eraser').classList.toggle('active', t === 'eraser');
+}
+
+function setSize(s) {
+  notesSize = s;
+  document.querySelectorAll('#stroke-sizes .tool-size-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.size) === s);
+  });
+}
+
+function setColor(c) {
+  notesColor = c;
+  document.querySelectorAll('#color-swatches .color-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.color === c);
+  });
+  if (notesTool === 'eraser') setTool('pen');
+}
+
+function clearPage() {
+  if (!confirm('Clear this notes page?')) return;
+  notesCtx.clearRect(0, 0, PAGE_W, PAGE_H);
+  captureNotesPage();
+  saveState();
+}
+
+function addNotePage() {
+  captureNotesPage();
+  state.notes.pages.push(null);
+  state.notes.activePage = state.notes.pages.length - 1;
+  restoreNotesPage();
+  updatePageIndicator();
+  saveState();
+}
+
+function prevPage() {
+  if (state.notes.activePage <= 0) return;
+  captureNotesPage();
+  state.notes.activePage--;
+  restoreNotesPage();
+  updatePageIndicator();
+}
+
+function nextPage() {
+  if (state.notes.activePage >= state.notes.pages.length - 1) return;
+  captureNotesPage();
+  state.notes.activePage++;
+  restoreNotesPage();
+  updatePageIndicator();
+}
+
+function updatePageIndicator() {
+  if (!state) return;
+  document.getElementById('page-indicator').textContent =
+    (state.notes.activePage + 1) + ' / ' + state.notes.pages.length;
+  document.getElementById('btn-prev-page').disabled = state.notes.activePage === 0;
+  document.getElementById('btn-next-page').disabled = state.notes.activePage >= state.notes.pages.length - 1;
+}
+
+function exportNotePage() {
+  captureNotesPage();
+  const pg = state.notes.activePage;
+  const dataURL = state.notes.pages[pg];
+  if (!dataURL) { alert('This page is blank.'); return; }
+  const a = document.createElement('a');
+  const addr = (state.fields['subject.address'] || 'fieldbook').replace(/[^a-z0-9]/gi,'_');
+  a.download = addr + '_notes_p' + (pg + 1) + '.png';
+  a.href = dataURL;
+  a.click();
+}
+
+// ══════════════════════════════════════════
+// EXPORT — HUMAN READABLE
+// ══════════════════════════════════════════
+function openExport() {
+  const text = buildExportText();
+  document.getElementById('export-preview').textContent = text;
+  openModal('modal-export');
+}
+
+function buildExportText() {
+  const f = state.fields;
+  const lines = [];
+  lines.push('FIELDBOOK INSPECTION REPORT');
+  lines.push('═'.repeat(44));
+
+  // Subject
+  lines.push('');
+  lines.push('SUBJECT PROPERTY');
+  lines.push('─'.repeat(30));
+  addLine(lines, 'Address', [f['subject.address'], f['subject.city'], f['subject.state_zip']].filter(Boolean).join(', '));
+  addLine(lines, 'APN', f['subject.apn']);
+  addLine(lines, 'County', f['subject.county']);
+  addLine(lines, 'Legal', f['subject.legal']);
+  addLine(lines, 'Property Type', f['subject.prop_type']);
+  addLine(lines, 'Inspection Date', f['subject.inspection_date']);
+  addLine(lines, 'Appraiser', f['subject.appraiser']);
+  addLine(lines, 'Client', f['subject.client']);
+  addLine(lines, 'File No.', f['subject.file_no']);
+
+  lines.push('');
+  lines.push('SITE');
+  lines.push('─'.repeat(30));
+  addLine(lines, 'Site Area', f['subject.site_area']);
+  addLine(lines, 'Shape', f['subject.site_shape']);
+  addLine(lines, 'Zoning', f['subject.zoning'] + (f['subject.zoning_desc'] ? ' — ' + f['subject.zoning_desc'] : ''));
+  addLine(lines, 'Street Surface', f['subject.street_surface']);
+  addLine(lines, 'Alley', f['subject.alley']);
+
+  const utils = ['electric','gas','water','sewer','well','septic','telephone','cable']
+    .filter(u => f['subject.util_' + u])
+    .map(u => u.charAt(0).toUpperCase() + u.slice(1));
+  if (utils.length) addLine(lines, 'Utilities', utils.join(', '));
+  if (f['subject.notes']) addLine(lines, 'Notes', f['subject.notes']);
+
+  // SFR Buildings
+  state.sfr.buildings.forEach(b => {
+    const bf = b.fields;
+    const hasData = Object.values(bf).some(v => v !== '' && v !== false && v !== null && v !== undefined);
+    if (!hasData) return;
+    lines.push('');
+    lines.push('SFR — ' + (b.name || 'Building'));
+    lines.push('─'.repeat(30));
+    addLine(lines, 'Foundation', bf['foundation_type'], bf['foundation_cond']);
+    addLine(lines, 'Exterior Walls', bf['ext_walls'], bf['ext_walls_cond']);
+    addLine(lines, 'Roof', bf['roof_surface'], bf['roof_cond']);
+    addLine(lines, 'Gutters', bf['gutters']);
+    addLine(lines, 'Windows', bf['windows']);
+    addLine(lines, 'Floors', bf['int_floors'], bf['int_floors_cond']);
+    addLine(lines, 'Interior Walls', bf['int_walls'], bf['int_walls_cond']);
+    addLine(lines, 'Trim/Finish', bf['int_trim'], bf['int_trim_cond']);
+    addLine(lines, 'Bath Floors', bf['bath_floors']);
+    addLine(lines, 'Bath Walls', bf['bath_walls']);
+    addLine(lines, 'Kitchen Cabinets', bf['kit_cabinets']);
+    addLine(lines, 'Countertops', bf['kit_counters']);
+
+    const rooms = [bf['rooms_total'] ? 'Total: ' + bf['rooms_total'] : '',
+                   bf['rooms_bed'] ? 'Bed: ' + bf['rooms_bed'] : '',
+                   bf['rooms_bath'] ? 'Bath: ' + bf['rooms_bath'] : ''].filter(Boolean).join(' / ');
+    if (rooms) addLine(lines, 'Rooms', rooms);
+
+    addLine(lines, 'Attic Access', bf['attic_access']);
+    addLine(lines, 'Attic Insulation', bf['attic_insulation']);
+    addLine(lines, 'Heat Type', bf['heat_type']);
+    addLine(lines, 'Heat Fuel', bf['heat_fuel']);
+    addLine(lines, 'Cooling', bf['cool_type']);
+    addLine(lines, 'HVAC Condition', bf['hvac_cond']);
+    addLine(lines, 'Garage', bf['garage_type'], bf['garage_cars'] ? bf['garage_cars'] + ' car' : '');
+    addLine(lines, 'Garage Condition', bf['garage_cond']);
+    addLine(lines, 'Driveway', bf['driveway']);
+
+    const amens = ['fireplace','deck','porch','patio','pool','fence','sprinkler','security','central_vac','intercom']
+      .filter(a => bf['amen_' + a])
+      .map(a => a.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase()));
+    if (amens.length) addLine(lines, 'Amenities', amens.join(', '));
+
+    const appls = ['range','oven','dishwasher','refrigerator','microwave','disposal','washer','dryer','hood']
+      .filter(a => bf['appl_' + a])
+      .map(a => a.charAt(0).toUpperCase() + a.slice(1));
+    if (appls.length) addLine(lines, 'Appliances', appls.join(', '));
+
+    // Notes
+    ['foundation_notes','ext_notes','int_notes','attic_notes','hvac_notes','amen_notes','appl_notes'].forEach(k => {
+      if (bf[k]) lines.push('  Note: ' + bf[k]);
+    });
+  });
+
+  lines.push('');
+  lines.push('─'.repeat(44));
+  lines.push('Notes pages: ' + state.notes.pages.filter(Boolean).length + ' drawn page(s) — export as images separately.');
+  lines.push('Generated: ' + new Date().toLocaleString());
+
+  return lines.join('\n');
+}
+
+function addLine(lines, label, ...vals) {
+  const val = vals.filter(v => v && v.trim && v.trim() !== '' || (typeof v === 'string' && v !== '')).join(' / ');
+  if (!val || val === ' / ') return;
+  lines.push(label.padEnd(20) + val);
+}
+
+function copyExport() {
+  const text = document.getElementById('export-preview').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#modal-export .btn-modal-primary');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+}
+
+// ══════════════════════════════════════════
+// ARCHIVE / CLOSE
+// ══════════════════════════════════════════
+function doArchive() {
+  captureNotesPage();
+  saveState();
+  const addr = (state.fields['subject.address'] || 'fieldbook').replace(/[^a-z0-9]/gi,'_');
+  const date = (state.fields['subject.inspection_date'] || new Date().toISOString().slice(0,10));
+  const filename = addr + '_' + date + '.fbk';
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function doArchiveAndClose() {
+  doArchive();
+  localStorage.removeItem(LS_KEY);
+  closeModal('modal-confirm-close');
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('visible');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('visible');
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', e => {
+    if (e.target === bd) bd.classList.remove('visible');
+  });
+});
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+initLaunch();
+</script>
+</body>
+</html>
