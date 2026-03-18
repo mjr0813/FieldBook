@@ -15,8 +15,8 @@
     --surface3: #eeeae2;
     --border: #d8d4cb;
     --border2: #e4e0d8;
-    --accent: #2a5c84;
-    --accent-light: #e6f0f7;
+    --accent: #8a4f1e;
+    --accent-light: #f5ede4;
     --success: #2a6348;
     --danger: #7a2a2a;
     --danger-light: #f2e6e6;
@@ -27,7 +27,7 @@
     --shadow: 0 2px 6px rgba(28,26,22,0.08), 0 1px 3px rgba(28,26,22,0.06);
     --shadow-lg: 0 8px 24px rgba(28,26,22,0.12), 0 2px 8px rgba(28,26,22,0.08);
     --sidebar-collapsed: 52px;
-    --sidebar-expanded: 200px;
+    --sidebar-expanded: 160px;
     --header-h: 52px;
     --radius-sm: 7px;
     --radius: 8px;
@@ -78,6 +78,9 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--muted);
+  }
+  .launch-title-row {
+    display: flex; align-items: center; gap: 10px;
   }
   .launch-title {
     font-family: var(--font-heading);
@@ -158,21 +161,41 @@
     z-index: 100;
   }
   .header-sidebar-spacer {
-    width: var(--sidebar-collapsed);
+    width: var(--sidebar-expanded);
     flex-shrink: 0;
     transition: width 0.2s ease;
     display: flex; align-items: center; justify-content: center;
   }
-  .sidebar-expanded .header-sidebar-spacer { width: var(--sidebar-expanded); }
-  .header-brand {
-    font-family: var(--font-heading);
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.01em;
-    margin-right: 16px;
-    white-space: nowrap;
+  #sidebar.collapsed ~ * .header-sidebar-spacer,
+  .sidebar-collapsed .header-sidebar-spacer { width: var(--sidebar-collapsed); }
+  .header-brand-zone {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 10px;
+    width: 100%;
   }
+  .header-hamburger {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    touch-action: manipulation;
+    transition: color 0.15s, background 0.15s;
+  }
+  .header-hamburger:hover { color: var(--text2); background: var(--surface2); }
+  .header-brand {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+  .brand-highlight { color: var(--accent); }
   .header-address {
     flex: 1;
     font-family: var(--font-mono);
@@ -220,7 +243,7 @@
 
   /* ── SIDEBAR ── */
   #sidebar {
-    width: var(--sidebar-collapsed);
+    width: var(--sidebar-expanded);
     background: var(--surface);
     border-right: 1px solid var(--border);
     display: flex; flex-direction: column;
@@ -229,18 +252,7 @@
     transition: width 0.2s ease;
     z-index: 50;
   }
-  #sidebar.expanded { width: var(--sidebar-expanded); }
-
-  .sidebar-toggle {
-    height: 40px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border2);
-    color: var(--muted);
-    transition: color 0.15s, background 0.15s;
-    flex-shrink: 0;
-  }
-  .sidebar-toggle:hover { color: var(--text2); background: var(--surface2); }
+  #sidebar.collapsed { width: var(--sidebar-collapsed); }
 
   .sidebar-tabs {
     flex: 1;
@@ -274,8 +286,8 @@
     border-left-color: var(--accent);
   }
   .sidebar-tab svg { flex-shrink: 0; }
-  .tab-label { opacity: 0; transition: opacity 0.15s; white-space: nowrap; }
-  #sidebar.expanded .tab-label { opacity: 1; }
+  .tab-label { opacity: 1; transition: opacity 0.15s; white-space: nowrap; }
+  #sidebar.collapsed .tab-label { opacity: 0; }
 
   .sidebar-section-divider {
     height: 1px;
@@ -295,9 +307,11 @@
     display: none;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 24px 28px;
     flex-direction: column;
     gap: 20px;
+    -webkit-overflow-scrolling: touch;
   }
   .tab-panel.active { display: flex; }
   .tab-panel::-webkit-scrollbar { width: 5px; }
@@ -545,9 +559,10 @@
   }
 
   /* ── NOTES PANEL ── */
-  #notes-panel {
+  #panel-notes {
     padding: 16px;
     gap: 12px;
+    overflow: hidden;
   }
   .notes-toolbar {
     display: flex; align-items: center; gap: 8px;
@@ -755,7 +770,15 @@
   <div class="launch-card">
     <div class="launch-brand">
       <span class="launch-suite">FieldSuite</span>
-      <span class="launch-title">FieldBook</span>
+      <div class="launch-title-row">
+        <svg width="22" height="22" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:var(--accent)">
+          <rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="8" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+          <rect x="1" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+          <rect x="8" y="8" width="5" height="5" fill="currentColor" opacity=".2" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span class="launch-title">Field<span style="color:var(--accent)">Book</span></span>
+      </div>
     </div>
     <div class="launch-divider"></div>
     <div class="launch-actions">
@@ -773,8 +796,22 @@
 
   <!-- HEADER -->
   <div id="header">
-    <div class="header-sidebar-spacer" id="header-spacer"></div>
-    <span class="header-brand">FieldBook</span>
+    <div class="header-sidebar-spacer" id="header-spacer" style="width:var(--sidebar-expanded)">
+      <div class="header-brand-zone">
+        <button class="header-hamburger" id="sidebar-toggle-header" onclick="toggleSidebar()" title="Toggle sidebar">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+        </button>
+        <div class="header-brand">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2"/>
+            <rect x="8" y="1" width="5" height="5" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+            <rect x="1" y="8" width="5" height="5" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+            <rect x="8" y="8" width="5" height="5" fill="currentColor" opacity=".2" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+          Field<span class="brand-highlight">Book</span>
+        </div>
+      </div>
+    </div>
     <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
     <div class="header-actions">
       <button class="btn-header" id="btn-export-text">
@@ -797,9 +834,6 @@
 
     <!-- SIDEBAR -->
     <div id="sidebar">
-      <div class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-      </div>
       <div class="sidebar-tabs" id="sidebar-tabs">
         <!-- Subject always on top -->
         <div class="sidebar-tab active" data-panel="subject">
@@ -1036,7 +1070,7 @@
       <div class="tab-panel" id="panel-aptunit"><div class="placeholder-panel"><svg width="48" height="48" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="10" height="12" rx="1"/><path d="M6 3v12M3 8h10"/></svg><div class="placeholder-title">Apartment Unit</div><div class="placeholder-sub">Coming in a future build</div></div></div>
 
       <!-- NOTES PANEL -->
-      <div class="tab-panel" id="notes-panel" id="panel-notes">
+      <div class="tab-panel" id="panel-notes">
         <div class="notes-toolbar">
           <div class="notes-tool-group">
             <button class="btn-tool active" id="tool-pen" title="Pen" onclick="setTool('pen')">
@@ -1274,19 +1308,25 @@ function startApp() {
 // ══════════════════════════════════════════
 // SIDEBAR NAV
 // ══════════════════════════════════════════
-function setupSidebarNav() {
+function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
-  document.getElementById('sidebar-toggle').addEventListener('click', () => {
-    const exp = sidebar.classList.toggle('expanded');
-    document.getElementById('app').classList.toggle('sidebar-expanded', exp);
-  });
+  const collapsed = sidebar.classList.toggle('collapsed');
+  document.getElementById('app').classList.toggle('sidebar-collapsed', collapsed);
+  // Update header spacer width directly for reliability
+  const spacer = document.getElementById('header-spacer');
+  spacer.style.width = collapsed
+    ? 'var(--sidebar-collapsed)'
+    : 'var(--sidebar-expanded)';
+}
+
+function setupSidebarNav() {
   document.querySelectorAll('.sidebar-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const panel = tab.dataset.panel;
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      const target = document.getElementById('panel-' + panel) || document.getElementById('notes-panel');
+      const target = document.getElementById('panel-' + panel);
       if (target) target.classList.add('active');
       if (panel === 'notes') resizeNotesCanvas();
     });
