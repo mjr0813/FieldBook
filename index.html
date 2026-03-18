@@ -15,8 +15,8 @@
     --surface3: #eeeae2;
     --border: #d8d4cb;
     --border2: #e4e0d8;
-    --accent: #8a4f1e;
-    --accent-light: #f5ede4;
+    --accent: #8a5a1a;
+    --accent-light: #f5ede0;
     --success: #2a6348;
     --danger: #7a2a2a;
     --danger-light: #f2e6e6;
@@ -151,23 +151,33 @@
   /* ── APP SHELL ── */
   #app {
     display: none;
+    width: 100vw;
     height: 100vh;
-    flex-direction: column;
   }
-  #app.visible { display: flex; }
+  #app.visible { display: block; }
 
   /* ── HEADER ── */
   #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
     height: var(--header-h);
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
     display: flex; align-items: center;
-    padding: 0 14px 0 0;
-    flex-shrink: 0;
     z-index: 100;
+    overflow: hidden;
   }
-  /* Brand zone sits over the sidebar column — fixed width matches sidebar */
+
+  /* ── BODY (below fixed header) ── */
+  #body {
+    position: fixed;
+    top: var(--header-h);
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    overflow: hidden;
+  }
+  /* Brand zone: fixed width column, transitions with sidebar */
   .header-brand-zone {
     width: var(--sidebar-expanded);
     flex-shrink: 0;
@@ -176,8 +186,18 @@
     gap: 10px;
     transition: width 0.2s ease;
     overflow: hidden;
+    border-right: 1px solid var(--border);
+    height: 100%;
   }
-  #sidebar.collapsed + #body .header-brand-zone { width: var(--sidebar-collapsed); }
+  /* Toolbar: everything to the right of the brand zone, completely independent */
+  .header-toolbar {
+    flex: 1;
+    min-width: 0;
+    display: flex; align-items: center;
+    padding: 0 14px 0 12px;
+    gap: 8px;
+    overflow: hidden;
+  }
   .header-hamburger {
     width: 28px; height: 28px;
     display: flex; align-items: center; justify-content: center;
@@ -191,7 +211,7 @@
     transition: color 0.15s, background 0.15s;
   }
   .header-hamburger:hover { color: var(--text2); background: var(--surface2); }
-  /* Logo pill — colored rounded square containing icon */
+  /* Logo pill */
   .header-logo-pill {
     display: flex; align-items: center; justify-content: center;
     width: 26px; height: 26px;
@@ -208,14 +228,6 @@
     color: var(--text);
   }
   .brand-highlight { color: var(--accent); }
-  /* Vertical divider after brand zone */
-  .header-divider {
-    width: 1px;
-    height: 22px;
-    background: var(--border);
-    flex-shrink: 0;
-    margin-right: 10px;
-  }
   .header-address {
     flex: 1;
     min-width: 0;
@@ -235,6 +247,7 @@
   .header-address.empty { color: var(--muted); font-style: italic; }
   .header-actions {
     display: flex; gap: 6px; align-items: center;
+    flex-shrink: 0;
   }
   .btn-header {
     display: flex; align-items: center; gap: 5px;
@@ -254,13 +267,6 @@
   .btn-header.danger { color: var(--danger); border-color: #d8b4b4; }
   .btn-header.danger:active { background: var(--danger-light); }
   .btn-header svg { flex-shrink: 0; }
-
-  /* ── BODY LAYOUT ── */
-  #body {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
 
   /* ── SIDEBAR ── */
   #sidebar {
@@ -794,12 +800,11 @@
       <div class="launch-title-row">
         <div class="launch-logo-pill">
           <svg width="20" height="20" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="1" y="1" width="5" height="5" stroke="white" stroke-width="1.2"/>
-            <rect x="8" y="1" width="5" height="5" stroke="white" stroke-width="1.2" opacity=".5"/>
-            <rect x="1" y="8" width="5" height="5" stroke="white" stroke-width="1.2" opacity=".5"/>
-            <rect x="8" y="8" width="5" height="5" fill="white" opacity=".2" stroke="white" stroke-width="1.2"/>
-            <line x1="9.5" y1="10" x2="11.5" y2="10" stroke="white" stroke-width="1" opacity=".9"/>
-            <line x1="9.5" y1="11.5" x2="11.5" y2="11.5" stroke="white" stroke-width="1" opacity=".9"/>
+            <rect x="2" y="1" width="10" height="12" rx="1" stroke="white" stroke-width="1.2" opacity=".6"/>
+            <line x1="4" y1="4.5" x2="10" y2="4.5" stroke="white" stroke-width="1"/>
+            <line x1="4" y1="6.5" x2="10" y2="6.5" stroke="white" stroke-width="1"/>
+            <line x1="4" y1="8.5" x2="10" y2="8.5" stroke="white" stroke-width="1"/>
+            <line x1="4" y1="10.5" x2="7" y2="10.5" stroke="white" stroke-width="1" opacity=".6"/>
           </svg>
         </div>
         <span class="launch-title">Field<span class="launch-title-accent">Book</span></span>
@@ -827,31 +832,31 @@
       </button>
       <div class="header-logo-pill">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="1" y="1" width="5" height="5" stroke="white" stroke-width="1.2"/>
-          <rect x="8" y="1" width="5" height="5" stroke="white" stroke-width="1.2" opacity=".5"/>
-          <rect x="1" y="8" width="5" height="5" stroke="white" stroke-width="1.2" opacity=".5"/>
-          <rect x="8" y="8" width="5" height="5" fill="white" opacity=".2" stroke="white" stroke-width="1.2"/>
-          <line x1="9.5" y1="10" x2="11.5" y2="10" stroke="white" stroke-width="1" opacity=".9"/>
-          <line x1="9.5" y1="11.5" x2="11.5" y2="11.5" stroke="white" stroke-width="1" opacity=".9"/>
+          <rect x="2" y="1" width="10" height="12" rx="1" stroke="white" stroke-width="1.2" opacity=".6"/>
+          <line x1="4" y1="4.5" x2="10" y2="4.5" stroke="white" stroke-width="1"/>
+          <line x1="4" y1="6.5" x2="10" y2="6.5" stroke="white" stroke-width="1"/>
+          <line x1="4" y1="8.5" x2="10" y2="8.5" stroke="white" stroke-width="1"/>
+          <line x1="4" y1="10.5" x2="7" y2="10.5" stroke="white" stroke-width="1" opacity=".6"/>
         </svg>
       </div>
       <span class="header-brand-text">Field<span class="brand-highlight">Book</span></span>
     </div>
-    <div class="header-divider"></div>
-    <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
-    <div class="header-actions">
-      <button class="btn-header" id="btn-export-text">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
-        Export
-      </button>
-      <button class="btn-header" id="btn-archive">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="12" height="9" rx="1"/><path d="M1 3h14M6 9h4"/></svg>
-        Archive
-      </button>
-      <button class="btn-header danger" id="btn-close-session">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6"/></svg>
-        Close
-      </button>
+    <div class="header-toolbar">
+      <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
+      <div class="header-actions">
+        <button class="btn-header" id="btn-export-text">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
+          Export
+        </button>
+        <button class="btn-header" id="btn-archive">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="12" height="9" rx="1"/><path d="M1 3h14M6 9h4"/></svg>
+          Archive
+        </button>
+        <button class="btn-header danger" id="btn-close-session">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6"/></svg>
+          Close
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1338,11 +1343,7 @@ function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const brandZone = document.getElementById('header-brand-zone');
   const collapsed = sidebar.classList.toggle('collapsed');
-  if (collapsed) {
-    brandZone.style.width = 'var(--sidebar-collapsed)';
-  } else {
-    brandZone.style.width = 'var(--sidebar-expanded)';
-  }
+  brandZone.style.width = collapsed ? 'var(--sidebar-collapsed)' : 'var(--sidebar-expanded)';
 }
 
 function setupSidebarNav() {
