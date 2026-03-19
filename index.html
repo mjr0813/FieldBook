@@ -7,6 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  button, .btn-tool, .btn-header, .btn-page-nav, .btn-add-page, .sidebar-tab, .color-swatch {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
 
   :root {
     --bg: #f0ede6;
@@ -582,6 +587,8 @@
     padding: 0;
     gap: 0;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .notes-toolbar {
     display: flex; align-items: center; gap: 6px;
@@ -590,6 +597,8 @@
     padding: 6px 10px;
     flex-shrink: 0;
     flex-wrap: wrap;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .notes-tool-group {
     display: flex; align-items: center; gap: 4px;
@@ -672,6 +681,8 @@
     align-items: stretch;
     justify-content: stretch;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
   }
   #notes-canvas {
     background: var(--surface);
@@ -680,6 +691,8 @@
     display: block;
     width: 100% !important;
     height: 100% !important;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   /* ── MODALS ── */
