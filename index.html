@@ -2158,7 +2158,6 @@ function wrapSelect(sel, listId, key, isSubjectField) {
 }
 
 function startApp() {
-  // Mark session as active immediately so refresh can resume it
   if (activeRecentIndex >= 0) {
     localStorage.setItem(LS_ACTIVE_KEY, String(activeRecentIndex));
   }
@@ -2176,6 +2175,22 @@ function startApp() {
   updateHeaderAddress();
   setupSidebarNav();
   setupHeaderActions();
+  // Restore the last active panel
+  const panel = state._activePanel;
+  if (panel && panel !== 'subject') {
+    if (panel === 'notes' || state._notesActive) {
+      openNotesPanel();
+    } else {
+      const tab = document.querySelector(`.sidebar-tab[data-panel="${panel}"]`);
+      if (tab) {
+        document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('panel-' + panel);
+        if (target) target.classList.add('active');
+      }
+    }
+  }
 }
 
 // ══════════════════════════════════════════
@@ -2198,10 +2213,20 @@ function setupSidebarNav() {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       const target = document.getElementById('panel-' + panel);
       if (target) target.classList.add('active');
-      // Deactivate notes button when switching away
       document.getElementById('btn-notes')?.classList.remove('active');
+      // Persist active panel
+      if (state) { state._activePanel = panel; state._notesActive = false; }
     });
   });
+}
+
+function openNotesPanel() {
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-notes').classList.add('active');
+  document.getElementById('btn-notes').classList.add('active');
+  resizeNotesCanvas();
+  if (state) { state._activePanel = 'notes'; state._notesActive = true; }
 }
 
 // ══════════════════════════════════════════
