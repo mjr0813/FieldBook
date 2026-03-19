@@ -244,14 +244,21 @@
     display: flex; gap: 6px; align-items: center;
     flex-shrink: 0;
   }
+  .header-accent-div {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
   .autosave-indicator {
     display: flex; align-items: center; gap: 4px;
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--muted);
-    padding: 4px 8px;
+    padding: 4px 7px;
     border-radius: var(--radius-sm);
-    transition: color 0.2s, background 0.2s;
+    transition: color 0.3s, background 0.3s;
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -261,7 +268,6 @@
   }
   .autosave-indicator svg {
     flex-shrink: 0;
-    transition: opacity 0.2s;
   }
   .btn-header {
     display: flex; align-items: center; gap: 5px;
@@ -409,6 +415,26 @@
   }
   .building-tab-btn.active .del-building { color: rgba(255,255,255,0.8); }
   .building-tab-btn .del-building:hover { opacity: 1; }
+  .bname-pencil {
+    display: flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+  .bname-pencil:hover { opacity: 1; }
+  .bname-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid currentColor;
+    outline: none;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: inherit;
+    width: 100px;
+    padding: 0 2px;
+  }
   .btn-add-building {
     display: flex; align-items: center; gap: 5px;
     padding: 5px 10px;
@@ -707,21 +733,40 @@
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 4px;
   }
-  .building-name-input {
+  .building-name-display {
     font-family: var(--font-ui);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text2);
-    border: 1px solid transparent;
+    flex: 1;
+  }
+  .building-name-input {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    border: 1px solid var(--accent);
     border-radius: var(--radius-sm);
     padding: 3px 7px;
-    background: transparent;
+    background: var(--surface);
     outline: none;
-    transition: border-color 0.15s, background 0.15s;
-    width: 180px;
+    box-shadow: 0 0 0 3px rgba(138,90,26,0.1);
+    flex: 1;
+    display: none;
   }
-  .building-name-input:hover { border-color: var(--border); background: var(--surface2); }
-  .building-name-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(138,90,26,0.1); }
+  .btn-edit-building-name {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    touch-action: manipulation;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .btn-edit-building-name:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
 
   /* ── PLACEHOLDER PANEL ── */
   .placeholder-panel {
@@ -855,8 +900,6 @@
     touch-action: none;
     cursor: crosshair;
     display: block;
-    width: 100% !important;
-    height: 100% !important;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -1014,10 +1057,10 @@
     </div>
     <div class="header-toolbar">
       <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
+      <div class="header-accent-div"></div>
       <div class="autosave-indicator" id="autosave-indicator">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" id="autosave-icon">
-          <path d="M2 6a4 4 0 104 4"/>
-          <path d="M6 2v2M6 2l-1.5 1.5M6 2l1.5 1.5"/>
+        <svg id="autosave-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2.5 8.5l3.5 3.5 7-7"/>
         </svg>
         <span id="autosave-label">Auto-save</span>
       </div>
@@ -1549,13 +1592,15 @@ function rebuildSelect(sel, listId) {
 // Handle "Custom…" selection — swap select for text input
 function handleSelectChange(sel, bkey, isSubjectField) {
   if (sel.value !== '__custom__') {
-    // Normal save
     if (isSubjectField) {
       if (!state) return;
       state.fields[bkey] = sel.value;
       if (['subject.address','subject.city','subject.state_zip','subject.inspection_date'].includes(bkey)) updateHeaderAddress();
-      saveState();
+    } else {
+      const b = activeBuilding();
+      if (b) b.fields[bkey] = sel.value;
     }
+    saveState();
     return;
   }
   // Swap to text input
@@ -1693,21 +1738,22 @@ let state = null; // null = no session
 // ══════════════════════════════════════════
 let _saveFlashTimer = null;
 
+const ICON_AUTOSAVE = '<path d="M2.5 8.5l3.5 3.5 7-7"/>';
+const ICON_SAVED    = '<path d="M2.5 8.5l3.5 3.5 7-7"/>';
+
 function flashSaved() {
   const indicator = document.getElementById('autosave-indicator');
   const label = document.getElementById('autosave-label');
   const icon = document.getElementById('autosave-icon');
   if (!indicator) return;
-  // Switch to saved state
   indicator.classList.add('saved');
   label.textContent = 'Saved';
-  icon.innerHTML = '<path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
-  // Clear any pending reset
+  icon.innerHTML = ICON_SAVED;
   if (_saveFlashTimer) clearTimeout(_saveFlashTimer);
   _saveFlashTimer = setTimeout(() => {
     indicator.classList.remove('saved');
     label.textContent = 'Auto-save';
-    icon.innerHTML = '<path d="M2 6a4 4 0 104 4"/><path d="M6 2v2M6 2l-1.5 1.5M6 2l1.5 1.5"/>';
+    icon.innerHTML = ICON_AUTOSAVE;
     _saveFlashTimer = null;
   }, 1800);
 }
@@ -2103,7 +2149,42 @@ function renderSFRBuildingTabs() {
   state.sfr.buildings.forEach(b => {
     const btn = document.createElement('button');
     btn.className = 'building-tab-btn' + (b.id === state.sfr.activeBuildingId ? ' active' : '');
-    btn.innerHTML = `<span class="bname-label">${escHtml(b.name)}</span>`;
+
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'bname-label';
+    nameLabel.textContent = b.name;
+
+    const pencil = document.createElement('span');
+    pencil.className = 'bname-pencil';
+    pencil.title = 'Rename';
+    pencil.innerHTML = '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>';
+
+    pencil.addEventListener('click', e => {
+      e.stopPropagation();
+      // Replace label+pencil with an input
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = b.name;
+      input.className = 'bname-input';
+      btn.innerHTML = '';
+      btn.appendChild(input);
+      input.focus();
+      input.select();
+
+      function commit() {
+        const val = input.value.trim() || b.name;
+        b.name = val;
+        saveState();
+        // Re-render tabs to restore pill appearance
+        renderSFRBuildingTabs();
+      }
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+    });
+
+    btn.appendChild(nameLabel);
+    btn.appendChild(pencil);
+
     if (state.sfr.buildings.length > 1) {
       const del = document.createElement('span');
       del.className = 'del-building';
@@ -2112,6 +2193,7 @@ function renderSFRBuildingTabs() {
       del.addEventListener('click', e => { e.stopPropagation(); deleteBuilding(b.id); });
       btn.appendChild(del);
     }
+
     btn.addEventListener('click', () => setActiveBuilding(b.id));
     bar.appendChild(btn);
   });
@@ -2122,23 +2204,6 @@ function renderSFRBuilding() {
   const container = document.getElementById('sfr-buildings');
   container.innerHTML = '';
   if (!b) return;
-
-  // Building name edit
-  const nameWrap = document.createElement('div');
-  nameWrap.className = 'building-name-wrap';
-  nameWrap.innerHTML = `<input class="building-name-input" value="${escHtml(b.name)}" placeholder="Building name" title="Edit building name">`;
-  const nameInput = nameWrap.querySelector('input');
-  nameInput.addEventListener('input', () => {
-    b.name = nameInput.value;
-    // Update tab label live
-    document.querySelectorAll('.building-tab-btn').forEach((btn, i) => {
-      if (state.sfr.buildings[i]?.id === b.id) {
-        btn.querySelector('.bname-label').textContent = b.name || 'Building';
-      }
-    });
-    saveState();
-  });
-  container.appendChild(nameWrap);
 
   // Render SFR sections
   container.appendChild(makeSFRSections(b));
@@ -2694,10 +2759,10 @@ function notesRedo() {
 }
 
 function loadCanvasDataURL(dataURL) {
-  notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+  notesCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   if (dataURL) {
     const img = new Image();
-    img.onload = () => notesCtx.drawImage(img, 0, 0, notesCanvas.width, notesCanvas.height);
+    img.onload = () => notesCtx.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
     img.src = dataURL;
   }
 }
@@ -2716,8 +2781,7 @@ function confirmDeletePage() {
 function doDeletePage() {
   closeModal('modal-confirm-delete-page');
   if (state.notes.pages.length <= 1) {
-    // Only one page — just clear it
-    notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+    notesCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     state.notes.pages[0] = null;
     state.notes.activePage = 0;
   } else {
@@ -2731,10 +2795,17 @@ function doDeletePage() {
   saveState();
 }
 
+// Fixed internal resolution — high DPI, never changes
+const CANVAS_W = 1488;
+const CANVAS_H = 2064;
+
 function initNotesCanvas() {
   notesCanvas = document.getElementById('notes-canvas');
+  // Set fixed internal resolution once
+  notesCanvas.width = CANVAS_W;
+  notesCanvas.height = CANVAS_H;
   notesCtx = notesCanvas.getContext('2d');
-  resizeNotesCanvas();
+  fitCanvasCSS();
   restoreNotesPage();
 
   notesCanvas.addEventListener('pointerdown', notesPointerDown, { passive: false });
@@ -2742,40 +2813,53 @@ function initNotesCanvas() {
   notesCanvas.addEventListener('pointerup', notesPointerUp);
   notesCanvas.addEventListener('pointercancel', notesPointerUp);
 
-  // Block iOS gesture recognizer from claiming the first arc/curve stroke
   notesCanvas.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
   notesCanvas.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
   notesCanvas.addEventListener('touchend', e => e.preventDefault(), { passive: false });
 
   updatePageIndicator();
   updateUndoButtons();
-  setTimeout(resizeNotesCanvas, 100);
+  setTimeout(fitCanvasCSS, 100);
 }
 
-function resizeNotesCanvas() {
+// Only changes CSS display size — bitmap stays intact
+function fitCanvasCSS() {
   const wrap = document.querySelector('.notes-canvas-wrap');
   if (!wrap || !notesCanvas) return;
-  const w = wrap.clientWidth;
-  const h = wrap.clientHeight;
-  if (w < 1 || h < 1) return;
-  const snapshot = notesCanvas.width > 0 ? notesCanvas.toDataURL('image/png') : null;
-  notesCanvas.width = w;
-  notesCanvas.height = h;
-  if (snapshot) {
-    const img = new Image();
-    img.onload = () => notesCtx.drawImage(img, 0, 0, w, h);
-    img.src = snapshot;
-  }
+  const wrapW = wrap.clientWidth;
+  const wrapH = wrap.clientHeight;
+  if (wrapW < 1 || wrapH < 1) return;
+  // Scale to fill wrap while maintaining aspect ratio
+  const scale = Math.min(wrapW / CANVAS_W, wrapH / CANVAS_H);
+  notesCanvas.style.width  = Math.round(CANVAS_W * scale) + 'px';
+  notesCanvas.style.height = Math.round(CANVAS_H * scale) + 'px';
 }
 
+// Alias so existing callers still work
+function resizeNotesCanvas() { fitCanvasCSS(); }
+
 window.addEventListener('resize', () => {
-  if (notesCanvas) resizeNotesCanvas();
+  if (notesCanvas) {
+    fitCanvasCSS();
+    // On orientation change restore from saved data to ensure crisp render
+    const pg = state?.notes?.activePage ?? 0;
+    const dataURL = state?.notes?.pages[pg];
+    if (dataURL) {
+      const img = new Image();
+      img.onload = () => {
+        notesCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+        notesCtx.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
+      };
+      img.src = dataURL;
+    }
+  }
 });
 
 function getCanvasPoint(e) {
   const rect = notesCanvas.getBoundingClientRect();
-  const scaleX = notesCanvas.width / rect.width;
-  const scaleY = notesCanvas.height / rect.height;
+  // Map CSS display coords back to internal resolution
+  const scaleX = CANVAS_W / rect.width;
+  const scaleY = CANVAS_H / rect.height;
   return {
     x: (e.clientX - rect.left) * scaleX,
     y: (e.clientY - rect.top) * scaleY
@@ -2843,12 +2927,12 @@ function captureNotesPage() {
 
 function restoreNotesPage() {
   if (!state || !notesCanvas) return;
-  notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+  notesCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   const pg = state.notes.activePage;
   const dataURL = state.notes.pages[pg];
   if (dataURL) {
     const img = new Image();
-    img.onload = () => notesCtx.drawImage(img, 0, 0, notesCanvas.width, notesCanvas.height);
+    img.onload = () => notesCtx.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
     img.src = dataURL;
   }
   undoStack = []; redoStack = [];
@@ -2879,7 +2963,7 @@ function setColor(c) {
 function clearPage() {
   if (!confirm('Clear this notes page?')) return;
   pushUndo();
-  notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+  notesCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   captureNotesPage();
   saveState();
 }
