@@ -223,6 +223,19 @@
     transition: color 0.15s, background 0.15s;
   }
   .recent-item-del:active { color: var(--danger); background: var(--danger-light); }
+  .recent-item-archive {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    cursor: pointer;
+    touch-action: manipulation;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+  }
+  .recent-item-archive:active { background: var(--accent-light); }
   /* Hidden file input */
   #open-archive-input { display: none; }
 
@@ -1590,6 +1603,8 @@ function saveRecents(recents) {
 function saveStateToRecents() {
   if (!state) return;
   if (notesCanvas && notesCanvas.width > 0) captureNotesPage();
+  // Mark as having unarchived changes
+  state.hasUnarchived = true;
   const recents = loadRecents();
   if (activeRecentIndex >= 0 && activeRecentIndex < recents.length) {
     recents[activeRecentIndex] = state;
@@ -1913,6 +1928,7 @@ function renderRecentsList() {
     const addr = inspection.fields?.['subject.address'] || 'Untitled Inspection';
     const city = inspection.fields?.['subject.city'] || '';
     const date = inspection.fields?.['subject.inspection_date'] || '';
+    const dirty = inspection.hasUnarchived === true;
     const item = document.createElement('div');
     item.className = 'recent-item';
     item.innerHTML = `
@@ -1927,19 +1943,55 @@ function renderRecentsList() {
         <div class="recent-item-addr">${escHtml(addr)}</div>
         <div class="recent-item-meta">${escHtml(city)}${city && date ? ' · ' : ''}${date ? formatDate(date) : ''}</div>
       </div>
+      ${dirty ? `<button class="recent-item-archive" title="Unarchived changes — tap to archive">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5v9a1 1 0 001 1h10a1 1 0 001-1V5"/><path d="M1 2h14v3H1zM8 8v4M6 10l2 2 2-2"/></svg>
+      </button>` : ''}
       <button class="recent-item-del" title="Remove from recents">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M5 4V3h6v1M6 7v5M10 7v5M4 4l.5 9h7L12 4"/></svg>
       </button>`;
-    // Open on tap
     item.querySelector('.recent-item-info').addEventListener('click', () => openRecent(idx));
     item.querySelector('.recent-item-icon').addEventListener('click', () => openRecent(idx));
-    // Delete
+    if (dirty) {
+      item.querySelector('.recent-item-archive').addEventListener('click', e => {
+        e.stopPropagation();
+        archiveRecentAtIndex(idx);
+      });
+    }
     item.querySelector('.recent-item-del').addEventListener('click', e => {
       e.stopPropagation();
       deleteRecent(idx);
     });
     container.appendChild(item);
   });
+}
+
+async function archiveRecentAtIndex(idx) {
+  const recents = loadRecents();
+  const inspection = recents[idx];
+  if (!inspection) return;
+  const addr = inspection.fields?.['subject.address'] || 'FieldBook';
+  const street = addr.split(',')[0].trim();
+  const filename = street + '.fbk';
+  const json = JSON.stringify(inspection, null, 2);
+  const file = new File([json], filename, { type: 'application/octet-stream' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      // Clear flag on success
+      recents[idx].hasUnarchived = false;
+      saveRecents(recents);
+      // If this is the active session, update state too
+      if (idx === activeRecentIndex && state) state.hasUnarchived = false;
+      renderRecentsList();
+    } catch (err) {
+      if (err.name !== 'AbortError') fallbackDownload(filename, json);
+    }
+  } else {
+    fallbackDownload(filename, json);
+    recents[idx].hasUnarchived = false;
+    saveRecents(recents);
+    renderRecentsList();
+  }
 }
 
 function openRecent(idx) {
@@ -3396,13 +3448,17 @@ async function doArchive() {
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file] });
+      // Archive succeeded — clear the dirty flag
+      state.hasUnarchived = false;
+      saveStateToRecents();
     } catch (err) {
-      // User cancelled or share failed — fall back to download
       if (err.name !== 'AbortError') fallbackDownload(filename, json);
+      else return; // User cancelled — don't clear flag
     }
   } else {
-    // Browser doesn't support file sharing — use download
     fallbackDownload(filename, json);
+    state.hasUnarchived = false;
+    saveStateToRecents();
   }
 }
 
