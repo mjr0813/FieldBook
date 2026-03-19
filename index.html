@@ -1567,7 +1567,8 @@
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-const LS_RECENTS_KEY = 'fieldbook_recents'; // array of up to 5 inspection objects
+const LS_RECENTS_KEY = 'fieldbook_recents';
+const LS_ACTIVE_KEY = 'fieldbook_active'; // stores the index of the active recent
 const LS_LISTS_KEY = 'fieldbook_lists';
 const MAX_RECENTS = 5;
 
@@ -1597,6 +1598,7 @@ function saveStateToRecents() {
     activeRecentIndex = 0;
   }
   saveRecents(recents);
+  localStorage.setItem(LS_ACTIVE_KEY, String(activeRecentIndex));
   flashSaved();
 }
 
@@ -1877,9 +1879,23 @@ function flashSaved() {
 // LAUNCH
 // ══════════════════════════════════════════
 function initLaunch() {
-  renderRecentsList();
-  // Bind file input for Open Archive
+  // Bind file input regardless of which path we take
   document.getElementById('open-archive-input').addEventListener('change', onArchiveFileSelected);
+
+  // If there was an active session (e.g. page was refreshed), resume it immediately
+  const activeIdxStr = localStorage.getItem(LS_ACTIVE_KEY);
+  if (activeIdxStr !== null) {
+    const idx = parseInt(activeIdxStr, 10);
+    const recents = loadRecents();
+    if (recents[idx]) {
+      state = recents[idx];
+      activeRecentIndex = idx;
+      startApp();
+      return;
+    }
+  }
+  // Otherwise show the launch screen normally
+  renderRecentsList();
 }
 
 function renderRecentsList() {
@@ -3382,6 +3398,7 @@ async function doArchiveAndFinalClose() {
 function doFinalClose() {
   closeModal('modal-confirm-close');
   saveState();
+  localStorage.removeItem(LS_ACTIVE_KEY);
   state = null;
   activeRecentIndex = -1;
   document.getElementById('app').classList.remove('visible');
