@@ -1603,8 +1603,6 @@ function saveRecents(recents) {
 function saveStateToRecents() {
   if (!state) return;
   if (notesCanvas && notesCanvas.width > 0) captureNotesPage();
-  // Mark as having unarchived changes
-  state.hasUnarchived = true;
   const recents = loadRecents();
   if (activeRecentIndex >= 0 && activeRecentIndex < recents.length) {
     recents[activeRecentIndex] = state;
@@ -1614,7 +1612,6 @@ function saveStateToRecents() {
     activeRecentIndex = 0;
   }
   saveRecents(recents);
-  // Always write active key after recents are saved
   localStorage.setItem(LS_ACTIVE_KEY, String(activeRecentIndex));
   flashSaved();
 }
@@ -1622,6 +1619,13 @@ function saveStateToRecents() {
 function saveState() {
   if (!state) return;
   saveStateToRecents();
+}
+
+// Call this only when the user makes actual content changes
+function markDirty() {
+  if (!state) return;
+  state.hasUnarchived = true;
+  saveState();
 }
 
 // ══════════════════════════════════════════
@@ -1734,7 +1738,7 @@ function handleSelectChange(sel, bkey, isSubjectField) {
       const b = activeBuilding();
       if (b) b.fields[bkey] = sel.value;
     }
-    saveState();
+    markDirty();
     return;
   }
   // Swap to text input
@@ -1774,10 +1778,10 @@ function handleSelectChange(sel, bkey, isSubjectField) {
     // Save state
     if (isSubjectField && state) {
       state.fields[bkey] = newSel.value;
-      saveState();
+      markDirty();
     } else {
       const b = activeBuilding();
-      if (b) { b.fields[bkey] = newSel.value; saveState(); }
+      if (b) { b.fields[bkey] = newSel.value; markDirty(); }
     }
   }
   input.addEventListener('blur', commitCustom);
@@ -2040,7 +2044,7 @@ function onArchiveFileSelected(e) {
       const loaded = JSON.parse(evt.target.result);
       state = loaded;
       activeRecentIndex = -1; // Will be prepended on first save
-      saveState(); // Adds to recents
+      saveState(); // structural — adds to recents
       startApp();
     } catch {
       alert('Could not open file. It may not be a valid FieldBook archive.');
@@ -2341,13 +2345,13 @@ function bindAllFields() {
       if (key === 'subject.address' || key === 'subject.city' || key === 'subject.state_zip' || key === 'subject.inspection_date') {
         updateHeaderAddress();
       }
-      saveState();
+      markDirty();
     });
     if (el.type === 'checkbox') {
       el.addEventListener('change', () => {
         if (!state) return;
         state.fields[el.dataset.key] = el.checked;
-        saveState();
+        markDirty();
       });
     }
   });
@@ -2378,7 +2382,7 @@ function addBuilding(type) {
     renderSFRBuildingTabs();
     renderSFRBuilding();
     initSelectWraps();
-    saveState();
+    markDirty();
   }
 }
 
@@ -2399,7 +2403,7 @@ function deleteBuilding(id) {
   renderSFRBuildingTabs();
   renderSFRBuilding();
   initSelectWraps();
-  saveState();
+  markDirty();
 }
 
 function captureActiveBuildingFields() {
@@ -2447,7 +2451,7 @@ function renderSFRBuildingTabs() {
       function commit() {
         const val = input.value.trim() || b.name;
         b.name = val;
-        saveState();
+        markDirty();
         // Re-render tabs to restore pill appearance
         renderSFRBuildingTabs();
       }
@@ -2495,7 +2499,7 @@ function renderSFRBuilding() {
     const evts = el.type === 'checkbox' ? ['change'] : ['input'];
     evts.forEach(evt => el.addEventListener(evt, () => {
       b.fields[el.dataset.bkey] = el.type === 'checkbox' ? el.checked : el.value;
-      saveState();
+      markDirty();
     }));
   });
 }
@@ -3017,7 +3021,7 @@ function notesUndo() {
   const dataURL = undoStack.pop();
   loadCanvasDataURL(dataURL);
   captureNotesPage();
-  saveState();
+  markDirty();
   updateUndoButtons();
 }
 
@@ -3027,7 +3031,7 @@ function notesRedo() {
   const dataURL = redoStack.pop();
   loadCanvasDataURL(dataURL);
   captureNotesPage();
-  saveState();
+  markDirty();
   updateUndoButtons();
 }
 
@@ -3065,7 +3069,7 @@ function doDeletePage() {
   undoStack = []; redoStack = [];
   updateUndoButtons();
   updatePageIndicator();
-  saveState();
+  markDirty();
 }
 
 // Fixed internal resolution — high DPI, never changes
@@ -3183,7 +3187,7 @@ function notesPointerUp(e) {
   notesDrawing = false;
   notesCtx.globalCompositeOperation = 'source-over';
   captureNotesPage();
-  saveState();
+  markDirty();
   updateUndoButtons();
 }
 
@@ -3237,7 +3241,7 @@ function clearPage() {
   pushUndo();
   notesCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   captureNotesPage();
-  saveState();
+  markDirty();
 }
 
 function addNotePage() {
@@ -3246,7 +3250,7 @@ function addNotePage() {
   state.notes.activePage = state.notes.pages.length - 1;
   restoreNotesPage();
   updatePageIndicator();
-  saveState();
+  markDirty();
 }
 
 function prevPage() {
