@@ -249,6 +249,7 @@
     transition: background 0.15s;
   }
   .btn-header:active { background: var(--surface3); }
+  .btn-header.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .btn-header.danger { color: var(--danger); border-color: #d8b4b4; }
   .btn-header.danger:active { background: var(--danger-light); }
   .btn-header svg { flex-shrink: 0; }
@@ -278,7 +279,7 @@
   .sidebar-tab {
     display: flex; align-items: center;
     height: 42px;
-    padding: 0 14px;
+    padding: 0 8px 0 12px;
     cursor: pointer;
     color: var(--muted);
     font-family: var(--font-ui);
@@ -287,7 +288,7 @@
     white-space: nowrap;
     transition: color 0.15s, background 0.15s;
     border-left: 2px solid transparent;
-    gap: 12px;
+    gap: 10px;
     position: relative;
   }
   .sidebar-tab:hover { color: var(--text2); background: var(--surface2); }
@@ -506,6 +507,7 @@
   .check-item span {
     font-family: var(--font-ui);
     font-size: 12px;
+    font-weight: 400;
     color: var(--text2);
   }
 
@@ -577,17 +579,16 @@
 
   /* ── NOTES PANEL ── */
   #panel-notes {
-    padding: 16px;
-    gap: 12px;
+    padding: 0;
+    gap: 0;
     overflow: hidden;
   }
   .notes-toolbar {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 6px;
     background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-lg);
-    padding: 8px 12px;
-    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border2);
+    padding: 6px 10px;
+    flex-shrink: 0;
     flex-wrap: wrap;
   }
   .notes-tool-group {
@@ -625,16 +626,18 @@
   }
   .color-swatch.active { border-color: var(--text2); transform: scale(1.15); }
   .notes-page-nav {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 6px;
     margin-left: auto;
   }
   .page-indicator {
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--muted);
+    min-width: 32px;
+    text-align: center;
   }
   .btn-page-nav {
-    width: 28px; height: 28px;
+    width: 26px; height: 26px;
     display: flex; align-items: center; justify-content: center;
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -643,11 +646,12 @@
     color: var(--text2);
     transition: background 0.15s;
     font-size: 14px;
+    touch-action: manipulation;
   }
   .btn-page-nav:disabled { opacity: 0.3; pointer-events: none; }
   .btn-add-page {
     display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px;
+    padding: 4px 9px;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -656,26 +660,26 @@
     font-weight: 600;
     color: var(--text2);
     cursor: pointer;
+    touch-action: manipulation;
     transition: all 0.15s;
   }
   .btn-add-page:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
 
   .notes-canvas-wrap {
     flex: 1;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    overflow: auto;
     min-height: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
   }
   #notes-canvas {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
     touch-action: none;
     cursor: crosshair;
     display: block;
+    width: 100% !important;
+    height: 100% !important;
   }
 
   /* ── MODALS ── */
@@ -728,9 +732,10 @@
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    touch-action: manipulation;
     transition: background 0.15s;
   }
-  .btn-modal-primary:active { background: #1e4464; }
+  .btn-modal-primary:active { filter: brightness(0.88); }
   .btn-modal-secondary {
     padding: 9px 16px;
     background: var(--surface2);
@@ -831,6 +836,10 @@
     <div class="header-toolbar">
       <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
       <div class="header-actions">
+        <button class="btn-header" id="btn-notes" onclick="openNotesPanel()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9h6M5 12h3"/></svg>
+          Notes
+        </button>
         <button class="btn-header" id="btn-export-text">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
           Export
@@ -913,13 +922,8 @@
           <span class="tab-label">SFR</span>
         </div>
 
-        <div class="sidebar-section-divider"></div>
-        <div class="sidebar-tab" data-panel="notes">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9l6 0M5 12h3"/></svg>
-          <span class="tab-label">Notes</span>
         </div>
       </div>
-    </div>
 
     <!-- MAIN -->
     <div id="main">
@@ -1046,6 +1050,7 @@
               <div class="check-group">
                 <label class="check-item"><input type="checkbox" data-key="subject.util_electric"><span>Electric</span></label>
                 <label class="check-item"><input type="checkbox" data-key="subject.util_gas"><span>Gas</span></label>
+                <label class="check-item"><input type="checkbox" data-key="subject.util_lp"><span>LP</span></label>
                 <label class="check-item"><input type="checkbox" data-key="subject.util_water"><span>Water</span></label>
                 <label class="check-item"><input type="checkbox" data-key="subject.util_sewer"><span>Sewer</span></label>
                 <label class="check-item"><input type="checkbox" data-key="subject.util_well"><span>Well</span></label>
@@ -1053,6 +1058,14 @@
                 <label class="check-item"><input type="checkbox" data-key="subject.util_telephone"><span>Telephone</span></label>
                 <label class="check-item"><input type="checkbox" data-key="subject.util_cable"><span>Cable/Fiber</span></label>
               </div>
+            </div>
+            <div class="field span2">
+              <label>Other Utilities</label>
+              <input type="text" data-key="subject.util_other" placeholder="Custom utility notes">
+            </div>
+            <div class="field span2">
+              <label>Site Notes</label>
+              <textarea data-key="subject.site_notes" placeholder="Additional site observations…"></textarea>
             </div>
           </div>
         </div>
@@ -1113,20 +1126,32 @@
             <div class="color-swatch" data-color="#8c887e" style="background:#8c887e" onclick="setColor('#8c887e')"></div>
           </div>
           <div class="notes-tool-sep"></div>
+          <div class="notes-tool-group">
+            <button class="btn-tool" id="btn-undo" title="Undo" onclick="notesUndo()">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6h7a4 4 0 010 8H5"/><path d="M2 6l3-3M2 6l3 3"/></svg>
+            </button>
+            <button class="btn-tool" id="btn-redo" title="Redo" onclick="notesRedo()">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 6H7a4 4 0 000 8h4"/><path d="M14 6l-3-3M14 6l-3 3"/></svg>
+            </button>
+          </div>
+          <div class="notes-tool-sep"></div>
           <button class="btn-tool" title="Clear page" onclick="clearPage()">
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M5 4V3h6v1M6 7v5M10 7v5M4 4l.5 9h7L12 4"/></svg>
           </button>
-          <div class="notes-tool-sep"></div>
           <button class="btn-tool" title="Export page as image" onclick="exportNotePage()">
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
           </button>
           <div class="notes-page-nav">
-            <button class="btn-page-nav" id="btn-prev-page" onclick="prevPage()">‹</button>
+            <button class="btn-page-nav" id="btn-prev-page" onclick="prevPage()" title="Previous page">‹</button>
             <span class="page-indicator" id="page-indicator">1 / 1</span>
-            <button class="btn-page-nav" id="btn-next-page" onclick="nextPage()">›</button>
+            <button class="btn-page-nav" id="btn-next-page" onclick="nextPage()" title="Next page">›</button>
             <button class="btn-add-page" onclick="addNotePage()">
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
-              Add Page
+              Add
+            </button>
+            <button class="btn-add-page" onclick="confirmDeletePage()" style="color:var(--danger); border-color:#d8b4b4;" id="btn-delete-page">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h8M4 3V2h4v1M5 5v4M7 5v4M3 3l.5 7h5L9 3"/></svg>
+              Del
             </button>
           </div>
         </div>
@@ -1170,7 +1195,7 @@
     <div class="confirm-msg">Archive and close this inspection? Your data will be saved as a <strong>.fbk</strong> file. The active session in this browser will be cleared.</div>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-close')">Cancel</button>
-      <button class="btn-modal-primary" onclick="doArchiveAndClose()" style="background:var(--accent)">Archive &amp; Close</button>
+      <button class="btn-modal-primary" onclick="doArchiveAndClose()">Archive &amp; Close</button>
     </div>
   </div>
 </div>
@@ -1192,7 +1217,18 @@
     <div class="confirm-msg">There is an existing inspection in progress. Starting a new one will permanently clear the current session. Archive first if you want to keep it.</div>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-new')">Cancel</button>
-      <button class="btn-modal-primary" onclick="proceedNew()" style="background:var(--accent)">Clear &amp; Start New</button>
+      <button class="btn-modal-primary" onclick="proceedNew()">Clear &amp; Start New</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop confirm-dialog" id="modal-confirm-delete-page">
+  <div class="modal">
+    <div class="modal-title">Delete Page?</div>
+    <div class="confirm-msg">This will permanently delete the current notes page and cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-delete-page')">Cancel</button>
+      <button class="btn-modal-primary" onclick="doDeletePage()">Delete Page</button>
     </div>
   </div>
 </div>
@@ -1244,7 +1280,7 @@ function initLaunch() {
     btnResume.disabled = false;
     const addr = _savedOnLaunch.fields?.['subject.address'] || 'Unknown address';
     const date = _savedOnLaunch.fields?.['subject.inspection_date'] || '';
-    resumeMeta.textContent = addr + (date ? ' · ' + date : '');
+    resumeMeta.textContent = addr + (date ? ' · ' + formatDate(date) : '');
   }
   document.getElementById('new-date').value = new Date().toISOString().slice(0,10);
 }
@@ -1326,6 +1362,14 @@ function startApp() {
 // ══════════════════════════════════════════
 // SIDEBAR NAV
 // ══════════════════════════════════════════
+function openNotesPanel() {
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-notes').classList.add('active');
+  document.getElementById('btn-notes').classList.add('active');
+  resizeNotesCanvas();
+}
+
 function setupSidebarNav() {
   document.querySelectorAll('.sidebar-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1335,7 +1379,8 @@ function setupSidebarNav() {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       const target = document.getElementById('panel-' + panel);
       if (target) target.classList.add('active');
-      if (panel === 'notes') resizeNotesCanvas();
+      // Deactivate notes button when switching away
+      document.getElementById('btn-notes')?.classList.remove('active');
     });
   });
 }
@@ -1343,6 +1388,13 @@ function setupSidebarNav() {
 // ══════════════════════════════════════════
 // HEADER
 // ══════════════════════════════════════════
+function formatDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return months[parseInt(m,10)-1] + ' ' + parseInt(d,10) + ', ' + y;
+}
+
 function updateHeaderAddress() {
   const el = document.getElementById('header-address');
   const addr = state?.fields?.['subject.address'];
@@ -1351,7 +1403,7 @@ function updateHeaderAddress() {
   if (addr) {
     let txt = addr;
     if (city) txt += ', ' + city;
-    if (date) txt += ' · ' + date;
+    if (date) txt += ' · ' + formatDate(date);
     el.textContent = txt;
     el.classList.remove('empty');
   } else {
@@ -1909,8 +1961,6 @@ function toggleSection(header) {
 // ══════════════════════════════════════════
 // NOTES CANVAS
 // ══════════════════════════════════════════
-const PAGE_W = 744; // A4-ish, fits iPad well
-const PAGE_H = 1050;
 let notesTool = 'pen';
 let notesSize = 2;
 let notesColor = '#1c1a16';
@@ -1919,11 +1969,80 @@ let notesLastX = 0, notesLastY = 0;
 let notesCtx = null;
 let notesCanvas = null;
 
+// Undo/redo stacks — per page, max 20 snapshots each
+let undoStack = [];
+let redoStack = [];
+const MAX_UNDO = 20;
+
+function pushUndo() {
+  undoStack.push(notesCanvas.toDataURL('image/png'));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+
+function notesUndo() {
+  if (!undoStack.length) return;
+  redoStack.push(notesCanvas.toDataURL('image/png'));
+  const dataURL = undoStack.pop();
+  loadCanvasDataURL(dataURL);
+  captureNotesPage();
+  saveState();
+  updateUndoButtons();
+}
+
+function notesRedo() {
+  if (!redoStack.length) return;
+  undoStack.push(notesCanvas.toDataURL('image/png'));
+  const dataURL = redoStack.pop();
+  loadCanvasDataURL(dataURL);
+  captureNotesPage();
+  saveState();
+  updateUndoButtons();
+}
+
+function loadCanvasDataURL(dataURL) {
+  notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+  if (dataURL) {
+    const img = new Image();
+    img.onload = () => notesCtx.drawImage(img, 0, 0, notesCanvas.width, notesCanvas.height);
+    img.src = dataURL;
+  }
+}
+
+function updateUndoButtons() {
+  const u = document.getElementById('btn-undo');
+  const r = document.getElementById('btn-redo');
+  if (u) u.style.opacity = undoStack.length ? '1' : '0.3';
+  if (r) r.style.opacity = redoStack.length ? '1' : '0.3';
+}
+
+function confirmDeletePage() {
+  openModal('modal-confirm-delete-page');
+}
+
+function doDeletePage() {
+  closeModal('modal-confirm-delete-page');
+  if (state.notes.pages.length <= 1) {
+    // Only one page — just clear it
+    notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
+    state.notes.pages[0] = null;
+    state.notes.activePage = 0;
+  } else {
+    state.notes.pages.splice(state.notes.activePage, 1);
+    state.notes.activePage = Math.min(state.notes.activePage, state.notes.pages.length - 1);
+    restoreNotesPage();
+  }
+  undoStack = []; redoStack = [];
+  updateUndoButtons();
+  updatePageIndicator();
+  saveState();
+}
+
 function initNotesCanvas() {
   notesCanvas = document.getElementById('notes-canvas');
-  notesCanvas.width = PAGE_W;
-  notesCanvas.height = PAGE_H;
   notesCtx = notesCanvas.getContext('2d');
+  resizeNotesCanvas();
   restoreNotesPage();
 
   notesCanvas.addEventListener('pointerdown', notesPointerDown, { passive: false });
@@ -1931,16 +2050,25 @@ function initNotesCanvas() {
   notesCanvas.addEventListener('pointerup', notesPointerUp);
   notesCanvas.addEventListener('pointercancel', notesPointerUp);
   updatePageIndicator();
+  updateUndoButtons();
+  // Defer resize in case notes panel isn't visible yet
+  setTimeout(resizeNotesCanvas, 100);
 }
 
 function resizeNotesCanvas() {
-  // Canvas size stays fixed (PAGE_W x PAGE_H); CSS scales it
   const wrap = document.querySelector('.notes-canvas-wrap');
-  if (!wrap) return;
-  const wrapW = wrap.clientWidth - 32;
-  const scale = Math.min(1, wrapW / PAGE_W);
-  notesCanvas.style.width = (PAGE_W * scale) + 'px';
-  notesCanvas.style.height = (PAGE_H * scale) + 'px';
+  if (!wrap || !notesCanvas) return;
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  if (w < 1 || h < 1) return;
+  const snapshot = notesCanvas.width > 0 ? notesCanvas.toDataURL('image/png') : null;
+  notesCanvas.width = w;
+  notesCanvas.height = h;
+  if (snapshot) {
+    const img = new Image();
+    img.onload = () => notesCtx.drawImage(img, 0, 0, w, h);
+    img.src = snapshot;
+  }
 }
 
 window.addEventListener('resize', () => {
@@ -1949,8 +2077,8 @@ window.addEventListener('resize', () => {
 
 function getCanvasPoint(e) {
   const rect = notesCanvas.getBoundingClientRect();
-  const scaleX = PAGE_W / rect.width;
-  const scaleY = PAGE_H / rect.height;
+  const scaleX = notesCanvas.width / rect.width;
+  const scaleY = notesCanvas.height / rect.height;
   return {
     x: (e.clientX - rect.left) * scaleX,
     y: (e.clientY - rect.top) * scaleY
@@ -1960,6 +2088,7 @@ function getCanvasPoint(e) {
 function notesPointerDown(e) {
   e.preventDefault();
   notesCanvas.setPointerCapture(e.pointerId);
+  pushUndo();
   notesDrawing = true;
   const p = getCanvasPoint(e);
   notesLastX = p.x; notesLastY = p.y;
@@ -2002,6 +2131,7 @@ function notesPointerUp(e) {
   notesCtx.globalCompositeOperation = 'source-over';
   captureNotesPage();
   saveState();
+  updateUndoButtons();
 }
 
 function currentRadius() {
@@ -2016,15 +2146,16 @@ function captureNotesPage() {
 
 function restoreNotesPage() {
   if (!state || !notesCanvas) return;
-  notesCtx.clearRect(0, 0, PAGE_W, PAGE_H);
+  notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
   const pg = state.notes.activePage;
   const dataURL = state.notes.pages[pg];
   if (dataURL) {
     const img = new Image();
-    img.onload = () => notesCtx.drawImage(img, 0, 0);
+    img.onload = () => notesCtx.drawImage(img, 0, 0, notesCanvas.width, notesCanvas.height);
     img.src = dataURL;
   }
-  setTimeout(resizeNotesCanvas, 50);
+  undoStack = []; redoStack = [];
+  updateUndoButtons();
 }
 
 function setTool(t) {
@@ -2050,7 +2181,8 @@ function setColor(c) {
 
 function clearPage() {
   if (!confirm('Clear this notes page?')) return;
-  notesCtx.clearRect(0, 0, PAGE_W, PAGE_H);
+  pushUndo();
+  notesCtx.clearRect(0, 0, notesCanvas.width, notesCanvas.height);
   captureNotesPage();
   saveState();
 }
@@ -2138,11 +2270,12 @@ function buildExportText() {
   addLine(lines, 'Street Surface', f['subject.street_surface']);
   addLine(lines, 'Alley', f['subject.alley']);
 
-  const utils = ['electric','gas','water','sewer','well','septic','telephone','cable']
+  const utils = ['electric','gas','lp','water','sewer','well','septic','telephone','cable']
     .filter(u => f['subject.util_' + u])
-    .map(u => u.charAt(0).toUpperCase() + u.slice(1));
+    .map(u => u === 'lp' ? 'LP' : u.charAt(0).toUpperCase() + u.slice(1));
   if (utils.length) addLine(lines, 'Utilities', utils.join(', '));
-  if (f['subject.notes']) addLine(lines, 'Notes', f['subject.notes']);
+  if (f['subject.util_other']) addLine(lines, 'Other Utilities', f['subject.util_other']);
+  if (f['subject.site_notes']) addLine(lines, 'Site Notes', f['subject.site_notes']);
 
   // SFR Buildings
   state.sfr.buildings.forEach(b => {
@@ -2227,8 +2360,18 @@ function doArchive() {
   captureNotesPage();
   saveState();
   const addr = (state.fields['subject.address'] || 'fieldbook').replace(/[^a-z0-9]/gi,'_');
-  const date = (state.fields['subject.inspection_date'] || new Date().toISOString().slice(0,10));
-  const filename = addr + '_' + date + '.fbk';
+  const rawDate = state.fields['subject.inspection_date'];
+  let dateStr;
+  if (rawDate) {
+    const [y, m, d] = rawDate.split('-');
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    dateStr = months[parseInt(m,10)-1] + '_' + parseInt(d,10) + '_' + y;
+  } else {
+    const now = new Date();
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    dateStr = months[now.getMonth()] + '_' + now.getDate() + '_' + now.getFullYear();
+  }
+  const filename = addr + '_' + dateStr + '.fbk';
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
