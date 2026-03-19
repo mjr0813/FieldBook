@@ -1012,6 +1012,7 @@
   }
   .modal-actions {
     display: flex; gap: 8px; justify-content: flex-end;
+    flex-wrap: wrap;
   }
   .btn-modal-primary {
     padding: 9px 20px;
@@ -1506,10 +1507,22 @@
 <div class="modal-backdrop confirm-dialog" id="modal-confirm-close">
   <div class="modal">
     <div class="modal-title">Close Inspection</div>
-    <div class="confirm-msg">Your inspection is saved automatically. Close and return to the file manager?</div>
+    <div class="confirm-msg">Your inspection is continuously saved to this device's local storage and will appear in Recent Inspections. To create a portable backup file, use <strong>Archive &amp; Close</strong> — this downloads a <strong>.fbk</strong> file you can store or transfer independently of this browser.</div>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-close')">Cancel</button>
-      <button class="btn-modal-primary" onclick="doFinalClose()">Close</button>
+      <button class="btn-modal-secondary" onclick="doFinalClose()">Close</button>
+      <button class="btn-modal-primary" onclick="doArchiveAndFinalClose()">Archive &amp; Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop confirm-dialog" id="modal-confirm-delete-recent">
+  <div class="modal">
+    <div class="modal-title">Remove Inspection?</div>
+    <div class="confirm-msg">This will remove the inspection from Recent Inspections. If you have not archived it, the data will be permanently lost.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-delete-recent')">Cancel</button>
+      <button class="btn-modal-primary" onclick="confirmDeleteRecent()">Remove</button>
     </div>
   </div>
 </div>
@@ -1923,10 +1936,20 @@ function openRecent(idx) {
   startApp();
 }
 
+let _pendingDeleteIdx = -1;
+
 function deleteRecent(idx) {
+  _pendingDeleteIdx = idx;
+  openModal('modal-confirm-delete-recent');
+}
+
+function confirmDeleteRecent() {
+  closeModal('modal-confirm-delete-recent');
+  if (_pendingDeleteIdx < 0) return;
   const recents = loadRecents();
-  recents.splice(idx, 1);
+  recents.splice(_pendingDeleteIdx, 1);
   saveRecents(recents);
+  _pendingDeleteIdx = -1;
   renderRecentsList();
 }
 
@@ -3315,21 +3338,9 @@ function copyExport() {
 // ARCHIVE / CLOSE
 // ══════════════════════════════════════════
 function buildFilename() {
-  const fullAddr = state.fields['subject.address'] || 'fieldbook';
-  // Use only the street portion — everything before the first comma
-  const street = fullAddr.split(',')[0].trim().replace(/[^a-z0-9]/gi,'_');
-  const rawDate = state.fields['subject.inspection_date'];
-  let dateStr;
-  if (rawDate) {
-    const [y, m, d] = rawDate.split('-');
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    dateStr = months[parseInt(m,10)-1] + '_' + parseInt(d,10) + '_' + y;
-  } else {
-    const now = new Date();
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    dateStr = months[now.getMonth()] + '_' + now.getDate() + '_' + now.getFullYear();
-  }
-  return street + '_' + dateStr + '.fbk';
+  const fullAddr = state.fields['subject.address'] || 'FieldBook';
+  const street = fullAddr.split(',')[0].trim();
+  return street + '.fbk';
 }
 
 function doArchive() {
@@ -3350,9 +3361,10 @@ function doArchive() {
   }, 1000);
 }
 
-function doArchiveThenPromptClose() {
+function doArchiveAndFinalClose() {
   closeModal('modal-confirm-close');
   doArchive();
+  doFinalClose();
 }
 
 function doFinalClose() {
