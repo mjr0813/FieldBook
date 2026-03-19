@@ -2067,9 +2067,14 @@ function initNotesCanvas() {
   notesCanvas.addEventListener('pointermove', notesPointerMove, { passive: false });
   notesCanvas.addEventListener('pointerup', notesPointerUp);
   notesCanvas.addEventListener('pointercancel', notesPointerUp);
+
+  // Block iOS gesture recognizer from claiming the first arc/curve stroke
+  notesCanvas.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  notesCanvas.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  notesCanvas.addEventListener('touchend', e => e.preventDefault(), { passive: false });
+
   updatePageIndicator();
   updateUndoButtons();
-  // Defer resize in case notes panel isn't visible yet
   setTimeout(resizeNotesCanvas, 100);
 }
 
