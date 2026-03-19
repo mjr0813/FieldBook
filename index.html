@@ -224,7 +224,6 @@
   }
   .brand-highlight { color: var(--accent); }
   .header-address {
-    flex: 1;
     min-width: 0;
     font-family: var(--font-mono);
     font-size: 11px;
@@ -237,9 +236,11 @@
     padding: 5px 8px;
     border-radius: var(--radius-sm);
     transition: background 0.15s;
+    max-width: 340px;
   }
   .header-address:hover { background: var(--surface2); }
   .header-address.empty { color: var(--muted); font-style: italic; }
+  .header-spacer { flex: 1; }
   .header-actions {
     display: flex; gap: 6px; align-items: center;
     flex-shrink: 0;
@@ -888,10 +889,10 @@
   .notes-canvas-wrap {
     flex: 1;
     min-height: 0;
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--surface);
     user-select: none;
     -webkit-user-select: none;
   }
@@ -1064,6 +1065,7 @@
         </svg>
         <span id="autosave-label">Auto-save</span>
       </div>
+      <div class="header-spacer"></div>
       <div class="header-actions">
         <button class="btn-header" id="btn-notes" onclick="openNotesPanel()">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9h6M5 12h3"/></svg>
@@ -2827,11 +2829,10 @@ function fitCanvasCSS() {
   const wrap = document.querySelector('.notes-canvas-wrap');
   if (!wrap || !notesCanvas) return;
   const wrapW = wrap.clientWidth;
-  const wrapH = wrap.clientHeight;
-  if (wrapW < 1 || wrapH < 1) return;
-  // Scale to fill wrap while maintaining aspect ratio
-  const scale = Math.min(wrapW / CANVAS_W, wrapH / CANVAS_H);
-  notesCanvas.style.width  = Math.round(CANVAS_W * scale) + 'px';
+  if (wrapW < 1) return;
+  // Always fill full width; height scales proportionally
+  const scale = wrapW / CANVAS_W;
+  notesCanvas.style.width  = wrapW + 'px';
   notesCanvas.style.height = Math.round(CANVAS_H * scale) + 'px';
 }
 
