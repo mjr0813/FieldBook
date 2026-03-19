@@ -1568,7 +1568,8 @@
 // STATE
 // ══════════════════════════════════════════
 const LS_RECENTS_KEY = 'fieldbook_recents';
-const LS_ACTIVE_KEY = 'fieldbook_active'; // stores the index of the active recent
+const LS_ACTIVE_KEY = 'fieldbook_active';
+const LS_PANEL_KEY = 'fieldbook_panel';
 const LS_LISTS_KEY = 'fieldbook_lists';
 const MAX_RECENTS = 5;
 
@@ -2176,9 +2177,9 @@ function startApp() {
   setupSidebarNav();
   setupHeaderActions();
   // Restore the last active panel
-  const panel = state._activePanel;
+  const panel = localStorage.getItem(LS_PANEL_KEY) || state._activePanel;
   if (panel && panel !== 'subject') {
-    if (panel === 'notes' || state._notesActive) {
+    if (panel === 'notes') {
       openNotesPanel();
     } else {
       const tab = document.querySelector(`.sidebar-tab[data-panel="${panel}"]`);
@@ -2214,7 +2215,7 @@ function setupSidebarNav() {
       const target = document.getElementById('panel-' + panel);
       if (target) target.classList.add('active');
       document.getElementById('btn-notes')?.classList.remove('active');
-      // Persist active panel
+      localStorage.setItem(LS_PANEL_KEY, panel);
       if (state) { state._activePanel = panel; state._notesActive = false; }
     });
   });
@@ -2227,6 +2228,7 @@ function openNotesPanel() {
   document.getElementById('btn-notes').classList.add('active');
   resizeNotesCanvas();
   if (state) { state._activePanel = 'notes'; state._notesActive = true; }
+  localStorage.setItem(LS_PANEL_KEY, 'notes');
 }
 
 // ══════════════════════════════════════════
@@ -3429,6 +3431,7 @@ function doFinalClose() {
   closeModal('modal-confirm-close');
   saveState();
   localStorage.removeItem(LS_ACTIVE_KEY);
+  localStorage.removeItem(LS_PANEL_KEY);
   state = null;
   activeRecentIndex = -1;
   document.getElementById('app').classList.remove('visible');
