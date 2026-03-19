@@ -1427,10 +1427,21 @@
 <div class="modal-backdrop confirm-dialog" id="modal-confirm-close">
   <div class="modal">
     <div class="modal-title">Close Inspection</div>
-    <div class="confirm-msg">Archive and close this inspection? Your data will be saved as a <strong>.fbk</strong> file. The active session in this browser will be cleared.</div>
+    <div class="confirm-msg">This will download your inspection as a <strong>.fbk</strong> archive file. Once you confirm the download completed, the active session will be cleared.</div>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-close')">Cancel</button>
-      <button class="btn-modal-primary" onclick="doArchiveAndClose()">Archive &amp; Close</button>
+      <button class="btn-modal-primary" onclick="doArchiveThenPromptClose()">Download Archive</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop confirm-dialog" id="modal-confirm-clear">
+  <div class="modal">
+    <div class="modal-title">Confirm Download</div>
+    <div class="confirm-msg">Did the <strong>.fbk</strong> file download successfully? Only close if you can see the file in your Downloads. If the download failed, tap Cancel and use the Archive button to try again.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-confirm-clear')">Cancel — Download Failed</button>
+      <button class="btn-modal-primary" onclick="doFinalClose()">Yes, Close Session</button>
     </div>
   </div>
 </div>
@@ -1513,12 +1524,12 @@ const LIST_DEFAULTS = {
   int_floors_cond: ['Excellent','Good','Average','Fair','Poor'],
   int_walls: ['Drywall','Plaster','Paneling','Other'],
   int_walls_cond: ['Excellent','Good','Average','Fair','Poor'],
-  int_trim: ['Painted Wood','Stained Wood','Basic/Minimal'],
+  int_trim: ['Painted Finish','Stained Finish','Basic/Minimal'],
   int_trim_cond: ['Excellent','Good','Average','Fair','Poor'],
   bath_floors: ['Tile','Vinyl','LVP','Other'],
   bath_walls: ['Tile','Fiberglass','Drywall','Other'],
   bath_wainscot: ['None','Tile','Beadboard','Other'],
-  kit_cabinets: ['Wood','Painted Wood','Laminate'],
+  kit_cabinets: ['Painted Finish','Stained Finish','Laminate'],
   kit_counters: ['Granite','Quartz','Laminate','Solid Surface','Tile','Other'],
   attic_access: ['None','Scuttle','Drop Stair','Stairs'],
   attic_insulation: ['None','Blown-in','Batt','Spray Foam'],
@@ -2422,7 +2433,7 @@ function makeSFRSections(b) {
         <label>Trim / Finish</label>
         <select data-bkey="int_trim">
           <option value="">—</option>
-          <option>Painted Wood</option><option>Stained Wood</option><option>Basic/Minimal</option>
+          <option>Painted Finish</option><option>Stained Finish</option><option>Basic/Minimal</option>
         </select>
       </div>
       <div class="field">
@@ -2457,7 +2468,7 @@ function makeSFRSections(b) {
         <label>Kitchen Cabinets</label>
         <select data-bkey="kit_cabinets">
           <option value="">—</option>
-          <option>Wood</option><option>Painted Wood</option><option>Laminate</option>
+          <option>Painted Finish</option><option>Stained Finish</option><option>Laminate</option>
         </select>
       </div>
       <div class="field">
@@ -3161,9 +3172,7 @@ function copyExport() {
 // ══════════════════════════════════════════
 // ARCHIVE / CLOSE
 // ══════════════════════════════════════════
-function doArchive() {
-  captureNotesPage();
-  saveState();
+function buildFilename() {
   const addr = (state.fields['subject.address'] || 'fieldbook').replace(/[^a-z0-9]/gi,'_');
   const rawDate = state.fields['subject.inspection_date'];
   let dateStr;
@@ -3176,20 +3185,43 @@ function doArchive() {
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     dateStr = months[now.getMonth()] + '_' + now.getDate() + '_' + now.getFullYear();
   }
-  const filename = addr + '_' + dateStr + '.fbk';
+  return addr + '_' + dateStr + '.fbk';
+}
+
+function doArchive() {
+  captureNotesPage();
+  saveState();
+  const filename = buildFilename();
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = filename;
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
-function doArchiveAndClose() {
-  doArchive();
-  localStorage.removeItem(LS_KEY);
+function doArchiveThenPromptClose() {
   closeModal('modal-confirm-close');
+  doArchive();
+  // Give Safari a moment to initiate the download before showing confirmation
+  setTimeout(() => openModal('modal-confirm-clear'), 800);
+}
+
+function doFinalClose() {
+  closeModal('modal-confirm-clear');
+  localStorage.removeItem(LS_KEY);
   location.reload();
+}
+
+// Keep this for any legacy calls
+function doArchiveAndClose() {
+  doArchiveThenPromptClose();
 }
 
 // ══════════════════════════════════════════
