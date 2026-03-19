@@ -1588,7 +1588,8 @@ function saveRecents(recents) {
 
 function saveStateToRecents() {
   if (!state) return;
-  captureNotesPage();
+  // Only capture canvas if it's been initialized and has content
+  if (notesCanvas && notesCanvas.width > 0) captureNotesPage();
   const recents = loadRecents();
   if (activeRecentIndex >= 0 && activeRecentIndex < recents.length) {
     recents[activeRecentIndex] = state;
@@ -3108,7 +3109,7 @@ function currentRadius() {
 }
 
 function captureNotesPage() {
-  if (!state || !notesCanvas) return;
+  if (!state || !notesCanvas || notesCanvas.width === 0) return;
   const pg = state.notes.activePage;
   state.notes.pages[pg] = notesCanvas.toDataURL('image/png');
 }
@@ -3438,8 +3439,10 @@ function escHtml(str) {
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
-loadCustomLists();
-initLaunch();
+document.addEventListener('DOMContentLoaded', () => {
+  loadCustomLists();
+  initLaunch();
+});
 </script>
 </body>
 </html>
