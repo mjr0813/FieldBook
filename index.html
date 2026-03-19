@@ -1538,11 +1538,12 @@
 
 <div class="modal-backdrop export-modal" id="modal-export">
   <div class="modal">
-    <div class="modal-title">Export — Human Readable</div>
+    <div class="modal-title" id="export-modal-title">Inspection Report</div>
     <pre class="export-preview" id="export-preview"></pre>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-export')">Close</button>
-      <button class="btn-modal-primary" onclick="copyExport()">Copy to Clipboard</button>
+      <button class="btn-modal-secondary" onclick="copyExport()">Copy Text</button>
+      <button class="btn-modal-primary" onclick="shareExport()">Share</button>
     </div>
   </div>
 </div>
@@ -3295,6 +3296,9 @@ function exportNotePage() {
 function openExport() {
   const text = buildExportText();
   document.getElementById('export-preview').textContent = text;
+  const addr = state.fields['subject.address'] || 'Inspection Report';
+  const street = addr.split(',')[0].trim();
+  document.getElementById('export-modal-title').textContent = street;
   openModal('modal-export');
 }
 
@@ -3313,7 +3317,7 @@ function buildExportText() {
   addLine(lines, 'County', f['subject.county']);
   addLine(lines, 'Legal', f['subject.legal']);
   addLine(lines, 'Property Type', f['subject.prop_type']);
-  addLine(lines, 'Inspection Date', f['subject.inspection_date']);
+  addLine(lines, 'Inspection Date', f['subject.inspection_date'] ? formatDate(f['subject.inspection_date']) : '');
   addLine(lines, 'Appraiser', f['subject.appraiser']);
   addLine(lines, 'Client', f['subject.client']);
   addLine(lines, 'File No.', f['subject.file_no']);
@@ -3409,9 +3413,15 @@ function buildExportText() {
     });
   });
 
+  const drawnPages = state.notes.pages.filter(Boolean).length;
+  if (drawnPages > 0) {
+    lines.push('');
+    lines.push('─'.repeat(44));
+    lines.push('Notes: ' + drawnPages + ' page(s) of handwritten notes.');
+    lines.push('To export notes pages as images, open the Notes panel');
+    lines.push('and use the download icon in the toolbar for each page.');
+  }
   lines.push('');
-  lines.push('─'.repeat(44));
-  lines.push('Notes pages: ' + state.notes.pages.filter(Boolean).length + ' drawn page(s) — export as images separately.');
   lines.push('Generated: ' + new Date().toLocaleString());
 
   return lines.join('\n');
@@ -3426,11 +3436,36 @@ function addLine(lines, label, ...vals) {
 function copyExport() {
   const text = document.getElementById('export-preview').textContent;
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('#modal-export .btn-modal-primary');
+    const btn = document.querySelector('#modal-export .btn-modal-secondary:last-of-type');
     const orig = btn.textContent;
     btn.textContent = 'Copied!';
     setTimeout(() => btn.textContent = orig, 1800);
   });
+}
+
+async function shareExport() {
+  const text = document.getElementById('export-preview').textContent;
+  const addr = state.fields['subject.address'] || 'FieldBook';
+  const street = addr.split(',')[0].trim();
+  const filename = street + '.txt';
+  const file = new File([text], filename, { type: 'text/plain' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        // Fallback — copy to clipboard
+        navigator.clipboard.writeText(text);
+      }
+    }
+  } else {
+    // Fallback for non-Safari — copy to clipboard
+    navigator.clipboard.writeText(text);
+    const btn = document.querySelector('#modal-export .btn-modal-primary');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1800);
+  }
 }
 
 // ══════════════════════════════════════════
