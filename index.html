@@ -7,10 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  button, .btn-tool, .btn-header, .btn-page-nav, .btn-add-page, .sidebar-tab, .color-swatch {
+  * {
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+  }
+  input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
   }
 
   :root {
