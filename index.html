@@ -244,6 +244,25 @@
     display: flex; gap: 6px; align-items: center;
     flex-shrink: 0;
   }
+  .autosave-indicator {
+    display: flex; align-items: center; gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .autosave-indicator.saved {
+    color: var(--success);
+    background: #eaf3ee;
+  }
+  .autosave-indicator svg {
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
   .btn-header {
     display: flex; align-items: center; gap: 5px;
     padding: 6px 11px;
@@ -485,7 +504,7 @@
   .field select:focus,
   .field textarea:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(42,92,132,0.12);
+    box-shadow: 0 0 0 3px rgba(138,90,26,0.12);
   }
   .field textarea {
     resize: vertical;
@@ -498,6 +517,113 @@
     background-position: right 10px center;
     padding-right: 28px;
   }
+  /* Select wrapper with inline edit button */
+  .select-wrap {
+    display: flex; align-items: center; gap: 5px;
+  }
+  .select-wrap select,
+  .select-wrap input[type="text"] {
+    flex: 1; min-width: 0;
+  }
+  .btn-edit-list {
+    width: 28px; height: 28px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s;
+  }
+  .btn-edit-list:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+  /* List editor modal */
+  .list-editor-modal .modal { width: 400px; }
+  .list-editor-defaults {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    line-height: 1.8;
+    margin-bottom: 14px;
+  }
+  .list-editor-defaults-title {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .list-custom-entries {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .list-custom-entry {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .list-custom-entry input {
+    flex: 1;
+    padding: 6px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+  }
+  .list-custom-entry input:focus { border-color: var(--accent); }
+  .btn-delete-entry {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    touch-action: manipulation;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .btn-delete-entry:hover { color: var(--danger); border-color: #d8b4b4; background: var(--danger-light); }
+  .list-add-row {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .list-add-row input {
+    flex: 1;
+    padding: 6px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+  }
+  .list-add-row input:focus { border-color: var(--accent); }
+  .btn-add-entry {
+    padding: 6px 12px;
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    touch-action: manipulation;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-add-entry:active { background: var(--accent); color: #fff; }
 
   /* Checkbox groups */
   .check-group {
@@ -519,6 +645,41 @@
     font-size: 12px;
     font-weight: 400;
     color: var(--text2);
+  }
+  /* Amenity row: checkbox + label + inline text note */
+  .amen-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 3px 0;
+  }
+  .amen-row input[type="checkbox"] {
+    width: 15px; height: 15px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .amen-row .amen-label {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text2);
+    width: 120px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .amen-row input[type="text"] {
+    flex: 1;
+    padding: 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+  }
+  .amen-row input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(138,90,26,0.1);
   }
 
   /* Radio groups */
@@ -560,7 +721,7 @@
     width: 180px;
   }
   .building-name-input:hover { border-color: var(--border); background: var(--surface2); }
-  .building-name-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(42,92,132,0.1); }
+  .building-name-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(138,90,26,0.1); }
 
   /* ── PLACEHOLDER PANEL ── */
   .placeholder-panel {
@@ -853,6 +1014,13 @@
     </div>
     <div class="header-toolbar">
       <span class="header-address empty" id="header-address" title="Click to edit subject">No inspection loaded</span>
+      <div class="autosave-indicator" id="autosave-indicator">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" id="autosave-icon">
+          <path d="M2 6a4 4 0 104 4"/>
+          <path d="M6 2v2M6 2l-1.5 1.5M6 2l1.5 1.5"/>
+        </svg>
+        <span id="autosave-label">Auto-save</span>
+      </div>
       <div class="header-actions">
         <button class="btn-header" id="btn-notes" onclick="openNotesPanel()">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9h6M5 12h3"/></svg>
@@ -966,8 +1134,8 @@
               <input type="text" data-key="subject.city" placeholder="City">
             </div>
             <div class="field">
-              <label>State / Zip</label>
-              <input type="text" data-key="subject.state_zip" placeholder="WI 54151">
+              <label>State, Zip</label>
+              <input type="text" data-key="subject.state_zip" placeholder="WI, 54151">
             </div>
             <div class="field">
               <label>APN / Parcel ID</label>
@@ -1192,8 +1360,12 @@
         <input type="text" id="new-address" placeholder="123 Main Street">
       </div>
       <div class="field">
-        <label>City, State</label>
-        <input type="text" id="new-city" placeholder="Peshtigo, WI">
+        <label>City</label>
+        <input type="text" id="new-city" placeholder="Peshtigo">
+      </div>
+      <div class="field">
+        <label>State, Zip</label>
+        <input type="text" id="new-state-zip" placeholder="WI, 54157">
       </div>
       <div class="field">
         <label>Inspection Date</label>
@@ -1251,11 +1423,258 @@
   </div>
 </div>
 
+<div class="modal-backdrop list-editor-modal" id="modal-list-editor">
+  <div class="modal">
+    <div class="modal-title" id="list-editor-title">Edit List</div>
+    <div class="list-editor-defaults-title">Default options</div>
+    <div class="list-editor-defaults" id="list-editor-defaults"></div>
+    <div class="list-editor-defaults-title">Custom entries</div>
+    <div class="list-custom-entries" id="list-custom-entries"></div>
+    <div class="list-add-row">
+      <input type="text" id="list-add-input" placeholder="New entry…">
+      <button class="btn-add-entry" onclick="listEditorAdd()">Add</button>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-modal-secondary" onclick="closeModal('modal-list-editor')">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 const LS_KEY = 'fieldbook_current';
+const LS_LISTS_KEY = 'fieldbook_lists';
+
+// ══════════════════════════════════════════
+// CUSTOM DROPDOWN LISTS
+// ══════════════════════════════════════════
+// Default options per list ID — source of truth for display in editor
+const LIST_DEFAULTS = {
+  foundation_type: ['Concrete Slab','Crawl Space','Full Basement','Partial Basement','Piers/Posts'],
+  foundation_cond: ['Excellent','Good','Average','Fair','Poor'],
+  foundation_walls: ['Poured Concrete','Concrete Block','Brick','Stone','Wood','Other'],
+  foundation_walls_cond: ['Excellent','Good','Average','Fair','Poor'],
+  basement_finish: ['Unfinished','Partially Finished','Finished'],
+  basement_entry: ['Interior','Walkout','Walk Up','Exterior Only'],
+  ext_walls: ['Vinyl Siding','Wood Siding','Fiber Cement','Brick','Stone','Stucco','Aluminum Siding','Log','Other'],
+  ext_walls_cond: ['Excellent','Good','Average','Fair','Poor'],
+  roof_surface: ['Asphalt Shingles','Metal','Wood Shakes','Tile','Flat/EPDM','Other'],
+  roof_cond: ['Excellent','Good','Average','Fair','Poor'],
+  gutters: ['Aluminum','Vinyl','Steel','None'],
+  windows: ['Double Hung','Single Hung','Casement','Sliding','Awning','Hopper'],
+  int_floors: ['Hardwood','Carpet','Tile','LVP/LVT','Laminate','Vinyl','Mixed'],
+  int_floors_cond: ['Excellent','Good','Average','Fair','Poor'],
+  int_walls: ['Drywall','Plaster','Paneling','Other'],
+  int_walls_cond: ['Excellent','Good','Average','Fair','Poor'],
+  int_trim: ['Painted Wood','Stained Wood','Basic/Minimal'],
+  int_trim_cond: ['Excellent','Good','Average','Fair','Poor'],
+  bath_floors: ['Tile','Vinyl','LVP','Other'],
+  bath_walls: ['Tile','Fiberglass','Drywall','Other'],
+  bath_wainscot: ['None','Tile','Beadboard','Other'],
+  kit_cabinets: ['Wood','Painted Wood','Laminate'],
+  kit_counters: ['Granite','Quartz','Laminate','Solid Surface','Tile','Other'],
+  attic_access: ['None','Scuttle','Drop Stair','Stairs'],
+  attic_insulation: ['None','Blown-in','Batt','Spray Foam'],
+  heat_type: ['Forced Air','Hot Water/Boiler','Radiant Floor','Electric Baseboard','Heat Pump','None'],
+  heat_fuel: ['Gas','Electric','Oil','Propane','Wood'],
+  cool_type: ['Central Air','Heat Pump','Window Units','None'],
+  hvac_cond: ['Excellent','Good','Average','Fair','Poor'],
+  garage_type: ['None','Attached','Detached','Built-in'],
+  garage_cars: ['1','2','3','4+'],
+  garage_cond: ['Excellent','Good','Average','Fair','Poor'],
+  carport_type: ['None','Attached','Detached'],
+  carport_cars: ['1','2','3','4+'],
+  driveway: ['Concrete','Asphalt','Gravel','Dirt','Brick/Paver','None'],
+  site_shape: ['Rectangular','Irregular','Triangular','Flag Lot'],
+  street_surface: ['Asphalt','Concrete','Gravel','Dirt'],
+  alley: ['None','Asphalt','Concrete','Gravel'],
+};
+
+let customLists = {};
+
+function loadCustomLists() {
+  try {
+    const raw = localStorage.getItem(LS_LISTS_KEY);
+    customLists = raw ? JSON.parse(raw) : {};
+  } catch { customLists = {}; }
+}
+
+function saveCustomLists() {
+  localStorage.setItem(LS_LISTS_KEY, JSON.stringify(customLists));
+}
+
+function getListOptions(listId) {
+  const defaults = LIST_DEFAULTS[listId] || [];
+  const custom = customLists[listId] || [];
+  return { defaults, custom };
+}
+
+// Called at app start and whenever lists change — rebuilds all selects in the DOM
+function applyListsToSelects() {
+  document.querySelectorAll('select[data-list-id]').forEach(sel => {
+    const listId = sel.dataset.listId;
+    const currentVal = sel.value;
+    rebuildSelect(sel, listId);
+    // Restore value if still valid, else keep blank
+    if (currentVal) sel.value = currentVal;
+  });
+}
+
+function rebuildSelect(sel, listId) {
+  const { defaults, custom } = getListOptions(listId);
+  const currentVal = sel.value;
+  // Preserve the blank/dash first option
+  sel.innerHTML = '<option value="">—</option>';
+  defaults.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    sel.appendChild(o);
+  });
+  custom.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    o.dataset.custom = '1';
+    sel.appendChild(o);
+  });
+  // Custom entry option at the bottom
+  const customOpt = document.createElement('option');
+  customOpt.value = '__custom__';
+  customOpt.textContent = 'Custom…';
+  sel.appendChild(customOpt);
+  if (currentVal) sel.value = currentVal;
+}
+
+// Handle "Custom…" selection — swap select for text input
+function handleSelectChange(sel, bkey, isSubjectField) {
+  if (sel.value !== '__custom__') {
+    // Normal save
+    if (isSubjectField) {
+      if (!state) return;
+      state.fields[bkey] = sel.value;
+      if (['subject.address','subject.city','subject.state_zip','subject.inspection_date'].includes(bkey)) updateHeaderAddress();
+      saveState();
+    }
+    return;
+  }
+  // Swap to text input
+  const wrap = sel.closest('.select-wrap');
+  if (!wrap) return;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Enter custom value…';
+  input.style.cssText = 'flex:1;min-width:0;';
+  // Copy field styling
+  input.className = '';
+  wrap.replaceChild(input, sel);
+  input.focus();
+  // On blur/enter — save value and restore select with custom value added
+  function commitCustom() {
+    const val = input.value.trim();
+    const newSel = document.createElement('select');
+    newSel.dataset.listId = sel.dataset.listId;
+    newSel.dataset.bkey = bkey;
+    if (isSubjectField) newSel.dataset.key = bkey;
+    else newSel.dataset.bkey = bkey;
+    newSel.style.cssText = 'flex:1;min-width:0;';
+    wrap.replaceChild(newSel, input);
+    rebuildSelect(newSel, sel.dataset.listId);
+    if (val) {
+      // Add to custom list permanently
+      if (!customLists[sel.dataset.listId]) customLists[sel.dataset.listId] = [];
+      if (!customLists[sel.dataset.listId].includes(val)) {
+        customLists[sel.dataset.listId].push(val);
+        saveCustomLists();
+        rebuildSelect(newSel, sel.dataset.listId);
+      }
+      newSel.value = val;
+    }
+    // Re-bind events
+    bindSelectEvents(newSel, bkey, isSubjectField);
+    // Save state
+    if (isSubjectField && state) {
+      state.fields[bkey] = newSel.value;
+      saveState();
+    } else {
+      const b = activeBuilding();
+      if (b) { b.fields[bkey] = newSel.value; saveState(); }
+    }
+  }
+  input.addEventListener('blur', commitCustom);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { input.blur(); } });
+}
+
+function bindSelectEvents(sel, bkey, isSubjectField) {
+  sel.addEventListener('change', () => handleSelectChange(sel, bkey, isSubjectField));
+}
+
+// List editor state
+let _editingListId = null;
+let _editingListLabel = null;
+
+function openListEditor(listId, label) {
+  _editingListId = listId;
+  _editingListLabel = label;
+  document.getElementById('list-editor-title').textContent = 'Edit: ' + label;
+  const { defaults, custom } = getListOptions(listId);
+  // Show defaults as read-only reference
+  document.getElementById('list-editor-defaults').textContent = defaults.join(', ');
+  // Render custom entries
+  renderCustomEntries();
+  document.getElementById('list-add-input').value = '';
+  openModal('modal-list-editor');
+}
+
+function renderCustomEntries() {
+  const container = document.getElementById('list-custom-entries');
+  const custom = customLists[_editingListId] || [];
+  container.innerHTML = '';
+  if (custom.length === 0) {
+    container.innerHTML = '<div style="font-family:var(--font-ui);font-size:12px;color:var(--muted);padding:4px 0;">No custom entries yet.</div>';
+    return;
+  }
+  custom.forEach((entry, idx) => {
+    const row = document.createElement('div');
+    row.className = 'list-custom-entry';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = entry;
+    inp.addEventListener('change', () => {
+      customLists[_editingListId][idx] = inp.value.trim();
+      saveCustomLists();
+      applyListsToSelects();
+    });
+    const del = document.createElement('button');
+    del.className = 'btn-delete-entry';
+    del.title = 'Delete';
+    del.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h8M4 3V2h4v1M5 5v4M7 5v4M3 3l.5 6h5L9 3"/></svg>';
+    del.addEventListener('click', () => {
+      customLists[_editingListId].splice(idx, 1);
+      saveCustomLists();
+      applyListsToSelects();
+      renderCustomEntries();
+    });
+    row.appendChild(inp);
+    row.appendChild(del);
+    container.appendChild(row);
+  });
+}
+
+function listEditorAdd() {
+  const inp = document.getElementById('list-add-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (!customLists[_editingListId]) customLists[_editingListId] = [];
+  if (!customLists[_editingListId].includes(val)) {
+    customLists[_editingListId].push(val);
+    saveCustomLists();
+    applyListsToSelects();
+    renderCustomEntries();
+  }
+  inp.value = '';
+  inp.focus();
+}
 let state = null; // null = no session
 
 // ── SFR building state ──
@@ -1272,11 +1691,32 @@ let state = null; // null = no session
 // ══════════════════════════════════════════
 // PERSISTENCE
 // ══════════════════════════════════════════
+let _saveFlashTimer = null;
+
+function flashSaved() {
+  const indicator = document.getElementById('autosave-indicator');
+  const label = document.getElementById('autosave-label');
+  const icon = document.getElementById('autosave-icon');
+  if (!indicator) return;
+  // Switch to saved state
+  indicator.classList.add('saved');
+  label.textContent = 'Saved';
+  icon.innerHTML = '<path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  // Clear any pending reset
+  if (_saveFlashTimer) clearTimeout(_saveFlashTimer);
+  _saveFlashTimer = setTimeout(() => {
+    indicator.classList.remove('saved');
+    label.textContent = 'Auto-save';
+    icon.innerHTML = '<path d="M2 6a4 4 0 104 4"/><path d="M6 2v2M6 2l-1.5 1.5M6 2l1.5 1.5"/>';
+    _saveFlashTimer = null;
+  }, 1800);
+}
+
 function saveState() {
   if (!state) return;
-  // Capture notes canvas into state before save
   captureNotesPage();
   localStorage.setItem(LS_KEY, JSON.stringify(state));
+  flashSaved();
 }
 
 function loadState() {
@@ -1326,16 +1766,19 @@ function openNewInspectionModal() {
   document.getElementById('new-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('new-address').value = '';
   document.getElementById('new-city').value = '';
+  document.getElementById('new-state-zip').value = '';
   openModal('modal-new');
 }
 
 function confirmNewInspection() {
   const addr = document.getElementById('new-address').value.trim();
   const city = document.getElementById('new-city').value.trim();
+  const stateZip = document.getElementById('new-state-zip').value.trim();
   const date = document.getElementById('new-date').value;
   state = createFreshState();
   if (addr) state.fields['subject.address'] = addr;
   if (city) state.fields['subject.city'] = city;
+  if (stateZip) state.fields['subject.state_zip'] = stateZip;
   if (date) state.fields['subject.inspection_date'] = date;
   closeModal('modal-new');
   saveState();
@@ -1360,10 +1803,126 @@ function createFreshState() {
 // ══════════════════════════════════════════
 // APP START
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// SELECT WRAPPING & LIST SYSTEM INIT
+// ══════════════════════════════════════════
+// Maps data-key / data-bkey values to list IDs
+const KEY_TO_LIST = {
+  // Subject fields
+  'subject.site_shape': 'site_shape',
+  'subject.street_surface': 'street_surface',
+  'subject.alley': 'alley',
+  // Building fields
+  'foundation_type': 'foundation_type',
+  'foundation_cond': 'foundation_cond',
+  'foundation_walls': 'foundation_walls',
+  'foundation_walls_cond': 'foundation_walls_cond',
+  'basement_finish': 'basement_finish',
+  'basement_entry': 'basement_entry',
+  'ext_walls': 'ext_walls',
+  'ext_walls_cond': 'ext_walls_cond',
+  'roof_surface': 'roof_surface',
+  'roof_cond': 'roof_cond',
+  'gutters': 'gutters',
+  'windows': 'windows',
+  'int_floors': 'int_floors',
+  'int_floors_cond': 'int_floors_cond',
+  'int_walls': 'int_walls',
+  'int_walls_cond': 'int_walls_cond',
+  'int_trim': 'int_trim',
+  'int_trim_cond': 'int_trim_cond',
+  'bath_floors': 'bath_floors',
+  'bath_walls': 'bath_walls',
+  'bath_wainscot': 'bath_wainscot',
+  'kit_cabinets': 'kit_cabinets',
+  'kit_counters': 'kit_counters',
+  'attic_access': 'attic_access',
+  'attic_insulation': 'attic_insulation',
+  'heat_type': 'heat_type',
+  'heat_fuel': 'heat_fuel',
+  'cool_type': 'cool_type',
+  'hvac_cond': 'hvac_cond',
+  'garage_type': 'garage_type',
+  'garage_cars': 'garage_cars',
+  'garage_cond': 'garage_cond',
+  'carport_type': 'carport_type',
+  'carport_cars': 'carport_cars',
+  'driveway': 'driveway',
+};
+
+// Human-readable labels for the editor modal title
+const LIST_LABELS = {
+  site_shape: 'Site Shape', street_surface: 'Street Surface', alley: 'Alley',
+  foundation_type: 'Foundation Type', foundation_cond: 'Foundation Condition',
+  foundation_walls: 'Foundation Walls', foundation_walls_cond: 'Foundation Walls Condition',
+  basement_finish: 'Basement Finish', basement_entry: 'Basement Entry/Exit',
+  ext_walls: 'Exterior Walls', ext_walls_cond: 'Exterior Walls Condition',
+  roof_surface: 'Roof Surface', roof_cond: 'Roof Condition',
+  gutters: 'Gutters', windows: 'Windows',
+  int_floors: 'Interior Floors', int_floors_cond: 'Interior Floors Condition',
+  int_walls: 'Interior Walls', int_walls_cond: 'Interior Walls Condition',
+  int_trim: 'Trim/Finish', int_trim_cond: 'Trim Condition',
+  bath_floors: 'Bath Floors', bath_walls: 'Bath Walls', bath_wainscot: 'Bath Wainscot',
+  kit_cabinets: 'Kitchen Cabinets', kit_counters: 'Countertops',
+  attic_access: 'Attic Access', attic_insulation: 'Attic Insulation',
+  heat_type: 'Heat Type', heat_fuel: 'Heat Fuel', cool_type: 'Cooling',
+  hvac_cond: 'HVAC Condition',
+  garage_type: 'Garage Type', garage_cars: 'Garage Capacity',
+  garage_cond: 'Garage Condition', carport_type: 'Carport Type',
+  carport_cars: 'Carport Capacity', driveway: 'Driveway Surface',
+};
+
+function initSelectWraps() {
+  // Process subject selects (data-key)
+  document.querySelectorAll('#panel-subject select[data-key]').forEach(sel => {
+    const key = sel.dataset.key;
+    const listId = KEY_TO_LIST[key];
+    if (!listId) return;
+    if (sel.closest('.select-wrap')) return; // already wrapped
+    wrapSelect(sel, listId, key, true);
+  });
+  // Process building selects (data-bkey) — inside sfr-buildings
+  document.querySelectorAll('#sfr-buildings select[data-bkey]').forEach(sel => {
+    const key = sel.dataset.bkey;
+    const listId = KEY_TO_LIST[key];
+    if (!listId) return;
+    if (sel.closest('.select-wrap')) return;
+    wrapSelect(sel, listId, key, false);
+  });
+}
+
+function wrapSelect(sel, listId, key, isSubjectField) {
+  // Tag the select
+  sel.dataset.listId = listId;
+  // Build current value from state before rebuilding
+  let currentVal = '';
+  if (isSubjectField && state) currentVal = state.fields[key] || '';
+  else { const b = activeBuilding(); if (b) currentVal = b.fields[key] || ''; }
+  // Rebuild options
+  rebuildSelect(sel, listId);
+  if (currentVal) sel.value = currentVal;
+  // Wrap in div
+  const wrap = document.createElement('div');
+  wrap.className = 'select-wrap';
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+  // Pencil button
+  const btn = document.createElement('button');
+  btn.className = 'btn-edit-list';
+  btn.title = 'Edit list options';
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>';
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    openListEditor(listId, LIST_LABELS[listId] || listId);
+  });
+  wrap.appendChild(btn);
+  // Bind change
+  bindSelectEvents(sel, key, isSubjectField);
+}
+
 function startApp() {
   document.getElementById('launch').classList.add('hidden');
   document.getElementById('app').classList.add('visible');
-  // Set activeBuildingId if missing
   if (!state.sfr.activeBuildingId && state.sfr.buildings.length > 0) {
     state.sfr.activeBuildingId = state.sfr.buildings[0].id;
   }
@@ -1371,6 +1930,7 @@ function startApp() {
   populateAllFields();
   renderSFRBuildingTabs();
   renderSFRBuilding();
+  initSelectWraps();
   initNotesCanvas();
   updateHeaderAddress();
   setupSidebarNav();
@@ -1417,10 +1977,12 @@ function updateHeaderAddress() {
   const el = document.getElementById('header-address');
   const addr = state?.fields?.['subject.address'];
   const city = state?.fields?.['subject.city'];
+  const stateZip = state?.fields?.['subject.state_zip'];
   const date = state?.fields?.['subject.inspection_date'];
   if (addr) {
     let txt = addr;
     if (city) txt += ', ' + city;
+    if (stateZip) txt += ', ' + stateZip;
     if (date) txt += ' · ' + formatDate(date);
     el.textContent = txt;
     el.classList.remove('empty');
@@ -1446,8 +2008,9 @@ function setupHeaderActions() {
 // FORM FIELD BINDING
 // ══════════════════════════════════════════
 function bindAllFields() {
-  // Subject fields
+  // Subject fields — skip selects with a list ID (handled by initSelectWraps)
   document.querySelectorAll('#panel-subject [data-key]').forEach(el => {
+    if (el.tagName === 'SELECT' && KEY_TO_LIST[el.dataset.key]) return;
     el.addEventListener('input', () => {
       if (!state) return;
       const key = el.dataset.key;
@@ -1456,7 +2019,7 @@ function bindAllFields() {
       } else {
         state.fields[key] = el.value;
       }
-      if (key === 'subject.address' || key === 'subject.city' || key === 'subject.inspection_date') {
+      if (key === 'subject.address' || key === 'subject.city' || key === 'subject.state_zip' || key === 'subject.inspection_date') {
         updateHeaderAddress();
       }
       saveState();
@@ -1495,6 +2058,7 @@ function addBuilding(type) {
     state.sfr.activeBuildingId = b.id;
     renderSFRBuildingTabs();
     renderSFRBuilding();
+    initSelectWraps();
     saveState();
   }
 }
@@ -1504,16 +2068,18 @@ function setActiveBuilding(id) {
   state.sfr.activeBuildingId = id;
   renderSFRBuildingTabs();
   renderSFRBuilding();
+  initSelectWraps();
 }
 
 function deleteBuilding(id) {
-  if (state.sfr.buildings.length <= 1) return; // keep at least one
+  if (state.sfr.buildings.length <= 1) return;
   state.sfr.buildings = state.sfr.buildings.filter(b => b.id !== id);
   if (state.sfr.activeBuildingId === id) {
     state.sfr.activeBuildingId = state.sfr.buildings[0].id;
   }
   renderSFRBuildingTabs();
   renderSFRBuilding();
+  initSelectWraps();
   saveState();
 }
 
@@ -1585,8 +2151,9 @@ function renderSFRBuilding() {
     else el.value = val;
   });
 
-  // Bind building fields
+  // Bind building fields — skip selects handled by initSelectWraps
   container.querySelectorAll('[data-bkey]').forEach(el => {
+    if (el.tagName === 'SELECT' && KEY_TO_LIST[el.dataset.bkey]) return;
     const evts = el.type === 'checkbox' ? ['change'] : ['input'];
     evts.forEach(evt => el.addEventListener(evt, () => {
       b.fields[el.dataset.bkey] = el.type === 'checkbox' ? el.checked : el.value;
@@ -1623,6 +2190,63 @@ function makeSFRSections(b) {
           <option value="">—</option>
           <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
         </select>
+      </div>
+      <div class="field">
+        <label>Foundation Walls</label>
+        <select data-bkey="foundation_walls">
+          <option value="">—</option>
+          <option>Poured Concrete</option>
+          <option>Concrete Block</option>
+          <option>Brick</option>
+          <option>Stone</option>
+          <option>Wood</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select data-bkey="foundation_walls_cond">
+          <option value="">—</option>
+          <option>Excellent</option><option>Good</option><option>Average</option><option>Fair</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Basement Area</label>
+        <input type="text" data-bkey="basement_area" placeholder="e.g. 1,200 sf">
+      </div>
+      <div class="field">
+        <label>Basement Finish</label>
+        <select data-bkey="basement_finish">
+          <option value="">—</option>
+          <option>Unfinished</option>
+          <option>Partially Finished</option>
+          <option>Finished</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Entry / Exit</label>
+        <select data-bkey="basement_entry">
+          <option value="">—</option>
+          <option>Interior</option>
+          <option>Walkout</option>
+          <option>Walk Up</option>
+          <option>Exterior Only</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Additional</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" data-bkey="foundation_sump"><span>Sump Pump</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="foundation_radon"><span>Radon Mitigation</span></label>
+        </div>
+      </div>
+      <div class="field span2">
+        <label>Evidence Of</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" data-bkey="foundation_ev_infestation"><span>Infestation</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="foundation_ev_dampness"><span>Dampness</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="foundation_ev_settlement"><span>Settlement</span></label>
+        </div>
       </div>
       <div class="field span2">
         <label>Foundation Notes</label>
@@ -1680,7 +2304,8 @@ function makeSFRSections(b) {
         <label>Window Type</label>
         <select data-bkey="windows">
           <option value="">—</option>
-          <option>Double Pane</option><option>Triple Pane</option><option>Single Pane</option><option>Storm</option>
+          <option>Double Hung</option><option>Single Hung</option><option>Casement</option>
+          <option>Sliding</option><option>Awning</option><option>Hopper</option>
         </select>
       </div>
       <div class="field span2">
@@ -1730,7 +2355,7 @@ function makeSFRSections(b) {
         <label>Trim / Finish</label>
         <select data-bkey="int_trim">
           <option value="">—</option>
-          <option>Painted Wood</option><option>Stained Wood</option><option>Basic/Minimal</option><option>Custom</option>
+          <option>Painted Wood</option><option>Stained Wood</option><option>Basic/Minimal</option>
         </select>
       </div>
       <div class="field">
@@ -1755,10 +2380,17 @@ function makeSFRSections(b) {
         </select>
       </div>
       <div class="field">
+        <label>Bath(s) — Wainscot</label>
+        <select data-bkey="bath_wainscot">
+          <option value="">—</option>
+          <option>None</option><option>Tile</option><option>Beadboard</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
         <label>Kitchen Cabinets</label>
         <select data-bkey="kit_cabinets">
           <option value="">—</option>
-          <option>Wood</option><option>Painted Wood</option><option>Laminate</option><option>Custom</option>
+          <option>Wood</option><option>Painted Wood</option><option>Laminate</option>
         </select>
       </div>
       <div class="field">
@@ -1809,7 +2441,7 @@ function makeSFRSections(b) {
         <label>Access</label>
         <select data-bkey="attic_access">
           <option value="">—</option>
-          <option>None</option><option>Scuttle</option><option>Pull-down Stairs</option><option>Stairs</option>
+          <option>None</option><option>Scuttle</option><option>Drop Stair</option><option>Stairs</option>
         </select>
       </div>
       <div class="field">
@@ -1818,6 +2450,14 @@ function makeSFRSections(b) {
           <option value="">—</option>
           <option>None</option><option>Blown-in</option><option>Batt</option><option>Spray Foam</option>
         </select>
+      </div>
+      <div class="field span2">
+        <label>Attic Features</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" data-bkey="attic_floor"><span>Floor</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="attic_finished"><span>Finished</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="attic_heated"><span>Heated</span></label>
+        </div>
       </div>
       <div class="field span2">
         <label>Attic Notes</label>
@@ -1878,18 +2518,17 @@ function makeSFRSections(b) {
     <div class="form-section-body single-col">
       <div class="field">
         <label>Amenities Present</label>
-        <div class="check-group">
-          <label class="check-item"><input type="checkbox" data-bkey="amen_fireplace"><span>Fireplace</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_deck"><span>Deck</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_porch"><span>Porch</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_patio"><span>Patio</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_pool"><span>Pool</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_fence"><span>Fence</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_sprinkler"><span>Sprinkler System</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_security"><span>Security System</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_central_vac"><span>Central Vac</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="amen_intercom"><span>Intercom</span></label>
-        </div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_fireplace"><span class="amen-label">Fireplace</span><input type="text" data-bkey="amen_fireplace_desc" placeholder="e.g. 2, gas/wood…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_stove"><span class="amen-label">Wood/Gas Stove</span><input type="text" data-bkey="amen_stove_desc" placeholder="e.g. gas, freestanding…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_deck"><span class="amen-label">Deck</span><input type="text" data-bkey="amen_deck_desc" placeholder="e.g. rear, composite…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_porch"><span class="amen-label">Porch</span><input type="text" data-bkey="amen_porch_desc" placeholder="e.g. screened, covered…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_patio"><span class="amen-label">Patio</span><input type="text" data-bkey="amen_patio_desc" placeholder="e.g. concrete, brick…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_pool"><span class="amen-label">Pool</span><input type="text" data-bkey="amen_pool_desc" placeholder="e.g. in-ground, above-ground…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_fence"><span class="amen-label">Fence</span><input type="text" data-bkey="amen_fence_desc" placeholder="e.g. wood, chain link…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_sprinkler"><span class="amen-label">Sprinkler System</span><input type="text" data-bkey="amen_sprinkler_desc" placeholder="e.g. in-ground, zones…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_security"><span class="amen-label">Security System</span><input type="text" data-bkey="amen_security_desc" placeholder="e.g. monitored, cameras…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_central_vac"><span class="amen-label">Central Vac</span><input type="text" data-bkey="amen_central_vac_desc" placeholder="Notes…"></div>
+        <div class="amen-row"><input type="checkbox" data-bkey="amen_intercom"><span class="amen-label">Intercom</span><input type="text" data-bkey="amen_intercom_desc" placeholder="Notes…"></div>
       </div>
       <div class="field">
         <label>Amenity Notes</label>
@@ -1905,13 +2544,15 @@ function makeSFRSections(b) {
       <svg class="form-section-chevron" width="12" height="12" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l5 5 5-5"/></svg>
     </div>
     <div class="form-section-body">
+      <div class="field span2" style="font-family:var(--font-ui);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding-bottom:2px;">Garage</div>
       <div class="field">
         <label>Type</label>
         <select data-bkey="garage_type">
           <option value="">—</option>
           <option>None</option>
-          <option>Attached Garage</option><option>Detached Garage</option>
-          <option>Carport</option><option>Built-in Garage</option>
+          <option>Attached</option>
+          <option>Detached</option>
+          <option>Built-in</option>
         </select>
       </div>
       <div class="field">
@@ -1929,11 +2570,41 @@ function makeSFRSections(b) {
         </select>
       </div>
       <div class="field">
-        <label>Driveway Surface</label>
+        <label>Garage Notes</label>
+        <input type="text" data-bkey="garage_notes" placeholder="e.g. heated, finished floor…">
+      </div>
+      <div class="field span2" style="font-family:var(--font-ui);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding-bottom:2px;border-top:1px solid var(--border2);padding-top:10px;margin-top:4px;">Carport</div>
+      <div class="field">
+        <label>Type</label>
+        <select data-bkey="carport_type">
+          <option value="">—</option>
+          <option>None</option>
+          <option>Attached</option>
+          <option>Detached</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Capacity (cars)</label>
+        <select data-bkey="carport_cars">
+          <option value="">—</option>
+          <option>1</option><option>2</option><option>3</option><option>4+</option>
+        </select>
+      </div>
+      <div class="field span2" style="font-family:var(--font-ui);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding-bottom:2px;border-top:1px solid var(--border2);padding-top:10px;margin-top:4px;">Driveway</div>
+      <div class="field">
+        <label>Surface</label>
         <select data-bkey="driveway">
           <option value="">—</option>
           <option>Concrete</option><option>Asphalt</option><option>Gravel</option><option>Dirt</option><option>Brick/Paver</option><option>None</option>
         </select>
+      </div>
+      <div class="field">
+        <label>Parking Stalls</label>
+        <input type="number" data-bkey="driveway_stalls" min="0" placeholder="0">
+      </div>
+      <div class="field span2">
+        <label>Car Storage Notes</label>
+        <textarea data-bkey="carstorage_notes" rows="2" placeholder="Additional observations…"></textarea>
       </div>
     </div>
   </div>
@@ -1948,16 +2619,19 @@ function makeSFRSections(b) {
       <div class="field">
         <label>Appliances Included</label>
         <div class="check-group">
-          <label class="check-item"><input type="checkbox" data-bkey="appl_range"><span>Range</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="appl_oven"><span>Oven (Wall)</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="appl_dishwasher"><span>Dishwasher</span></label>
           <label class="check-item"><input type="checkbox" data-bkey="appl_refrigerator"><span>Refrigerator</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="appl_microwave"><span>Microwave</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_range"><span>Range/Oven</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_dishwasher"><span>Dishwasher</span></label>
           <label class="check-item"><input type="checkbox" data-bkey="appl_disposal"><span>Disposal</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="appl_washer"><span>Washer</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="appl_dryer"><span>Dryer</span></label>
-          <label class="check-item"><input type="checkbox" data-bkey="appl_hood"><span>Hood/Vent</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_microwave"><span>Microwave</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_hood"><span>Hood Vent</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_washer_dryer"><span>Washer/Dryer</span></label>
+          <label class="check-item"><input type="checkbox" data-bkey="appl_other"><span>Other</span></label>
         </div>
+      </div>
+      <div class="field">
+        <label>Other Appliances</label>
+        <input type="text" data-bkey="appl_other_desc" placeholder="Describe other appliances…">
       </div>
       <div class="field">
         <label>Appliance Notes</label>
@@ -2309,6 +2983,14 @@ function buildExportText() {
     lines.push('SFR — ' + (b.name || 'Building'));
     lines.push('─'.repeat(30));
     addLine(lines, 'Foundation', bf['foundation_type'], bf['foundation_cond']);
+    addLine(lines, 'Foundation Walls', bf['foundation_walls'], bf['foundation_walls_cond']);
+    if (bf['basement_area']) addLine(lines, 'Basement Area', bf['basement_area']);
+    if (bf['basement_finish']) addLine(lines, 'Basement Finish', bf['basement_finish']);
+    if (bf['basement_entry']) addLine(lines, 'Basement Entry/Exit', bf['basement_entry']);
+    const foundExtra = [bf['foundation_sump'] ? 'Sump Pump' : '', bf['foundation_radon'] ? 'Radon Mitigation' : ''].filter(Boolean);
+    if (foundExtra.length) addLine(lines, 'Additional', foundExtra.join(', '));
+    const foundEv = [bf['foundation_ev_infestation'] ? 'Infestation' : '', bf['foundation_ev_dampness'] ? 'Dampness' : '', bf['foundation_ev_settlement'] ? 'Settlement' : ''].filter(Boolean);
+    if (foundEv.length) addLine(lines, 'Evidence Of', foundEv.join(', '));
     addLine(lines, 'Exterior Walls', bf['ext_walls'], bf['ext_walls_cond']);
     addLine(lines, 'Roof', bf['roof_surface'], bf['roof_cond']);
     addLine(lines, 'Gutters', bf['gutters']);
@@ -2318,6 +3000,7 @@ function buildExportText() {
     addLine(lines, 'Trim/Finish', bf['int_trim'], bf['int_trim_cond']);
     addLine(lines, 'Bath Floors', bf['bath_floors']);
     addLine(lines, 'Bath Walls', bf['bath_walls']);
+    addLine(lines, 'Bath Wainscot', bf['bath_wainscot']);
     addLine(lines, 'Kitchen Cabinets', bf['kit_cabinets']);
     addLine(lines, 'Countertops', bf['kit_counters']);
 
@@ -2328,26 +3011,40 @@ function buildExportText() {
 
     addLine(lines, 'Attic Access', bf['attic_access']);
     addLine(lines, 'Attic Insulation', bf['attic_insulation']);
+    const atticFeatures = ['floor','finished','heated'].filter(f => bf['attic_' + f]).map(f => f.charAt(0).toUpperCase() + f.slice(1));
+    if (atticFeatures.length) addLine(lines, 'Attic Features', atticFeatures.join(', '));
     addLine(lines, 'Heat Type', bf['heat_type']);
     addLine(lines, 'Heat Fuel', bf['heat_fuel']);
     addLine(lines, 'Cooling', bf['cool_type']);
     addLine(lines, 'HVAC Condition', bf['hvac_cond']);
-    addLine(lines, 'Garage', bf['garage_type'], bf['garage_cars'] ? bf['garage_cars'] + ' car' : '');
-    addLine(lines, 'Garage Condition', bf['garage_cond']);
-    addLine(lines, 'Driveway', bf['driveway']);
 
-    const amens = ['fireplace','deck','porch','patio','pool','fence','sprinkler','security','central_vac','intercom']
-      .filter(a => bf['amen_' + a])
-      .map(a => a.replace(/_/g,' ').replace(/\b\w/g, l => l.toUpperCase()));
-    if (amens.length) addLine(lines, 'Amenities', amens.join(', '));
+    // Car storage
+    addLine(lines, 'Garage', bf['garage_type'], bf['garage_cars'] ? bf['garage_cars'] + ' car' : '', bf['garage_cond']);
+    if (bf['garage_notes']) addLine(lines, 'Garage Notes', bf['garage_notes']);
+    addLine(lines, 'Carport', bf['carport_type'], bf['carport_cars'] ? bf['carport_cars'] + ' car' : '');
+    addLine(lines, 'Driveway', bf['driveway'], bf['driveway_stalls'] ? bf['driveway_stalls'] + ' stalls' : '');
 
-    const appls = ['range','oven','dishwasher','refrigerator','microwave','disposal','washer','dryer','hood']
+    // Amenities — include desc notes inline
+    const amenList = ['fireplace','stove','deck','porch','patio','pool','fence','sprinkler','security','central_vac','intercom'];
+    const amenLabels = {fireplace:'Fireplace',stove:'Wood/Gas Stove',deck:'Deck',porch:'Porch',patio:'Patio',pool:'Pool',fence:'Fence',sprinkler:'Sprinkler System',security:'Security System',central_vac:'Central Vac',intercom:'Intercom'};
+    amenList.filter(a => bf['amen_' + a]).forEach(a => {
+      const desc = bf['amen_' + a + '_desc'];
+      addLine(lines, amenLabels[a], desc || '✓');
+    });
+
+    const appls = ['refrigerator','range','dishwasher','disposal','microwave','hood','washer_dryer','other']
       .filter(a => bf['appl_' + a])
-      .map(a => a.charAt(0).toUpperCase() + a.slice(1));
+      .map(a => {
+        if (a === 'washer_dryer') return 'Washer/Dryer';
+        if (a === 'range') return 'Range/Oven';
+        if (a === 'hood') return 'Hood Vent';
+        if (a === 'other') return bf['appl_other_desc'] || 'Other';
+        return a.charAt(0).toUpperCase() + a.slice(1);
+      });
     if (appls.length) addLine(lines, 'Appliances', appls.join(', '));
 
     // Notes
-    ['foundation_notes','ext_notes','int_notes','attic_notes','hvac_notes','amen_notes','appl_notes'].forEach(k => {
+    ['foundation_notes','ext_notes','int_notes','attic_notes','hvac_notes','carstorage_notes','amen_notes','appl_notes'].forEach(k => {
       if (bf[k]) lines.push('  Note: ' + bf[k]);
     });
   });
@@ -2437,6 +3134,7 @@ function escHtml(str) {
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
+loadCustomLists();
 initLaunch();
 </script>
 </body>
