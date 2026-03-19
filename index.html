@@ -3352,7 +3352,7 @@ async function doArchive() {
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: filename });
+      await navigator.share({ files: [file] });
     } catch (err) {
       // User cancelled or share failed — fall back to download
       if (err.name !== 'AbortError') fallbackDownload(filename, json);
