@@ -1172,12 +1172,13 @@
         </svg>
         <span id="autosave-label">Auto-save</span>
       </div>
+      <div class="header-accent-div"></div>
+      <button class="btn-header" id="btn-notes" onclick="openNotesPanel()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9h6M5 12h3"/></svg>
+        Notes
+      </button>
       <div class="header-spacer"></div>
       <div class="header-actions">
-        <button class="btn-header" id="btn-notes" onclick="openNotesPanel()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6c1.5-1 5 1 5-3M5 9h6M5 12h3"/></svg>
-          Notes
-        </button>
         <button class="btn-header" id="btn-export-text">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10v4h12v-4M8 2v8M5 7l3 3 3-3"/></svg>
           Export
@@ -1553,6 +1554,7 @@
 <div class="modal-backdrop export-modal" id="modal-export">
   <div class="modal">
     <div class="modal-title" id="export-modal-title">Inspection Report</div>
+    <div class="confirm-msg" style="margin-bottom:12px;">Property details and any handwritten notes pages will be grouped and delivered as separate files in a single export.</div>
     <pre class="export-preview" id="export-preview"></pre>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-export')">Close</button>
@@ -3461,7 +3463,7 @@ async function shareExport() {
 
   if (navigator.canShare && navigator.canShare({ files })) {
     try {
-      await navigator.share({ files });
+      await navigator.share({ files, title: street + ' - fbk' });
     } catch (err) {
       if (err.name !== 'AbortError') fallbackDownload(street + '.txt', text);
     }
