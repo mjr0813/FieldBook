@@ -1041,6 +1041,20 @@
     transition: background 0.15s;
   }
   .btn-modal-primary:active { filter: brightness(0.88); }
+  .btn-modal-notes {
+    padding: 9px 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background 0.15s;
+  }
+  .btn-modal-notes:active { background: var(--accent); color: #fff; }
   .btn-modal-secondary {
     padding: 9px 16px;
     background: var(--surface2);
@@ -1540,11 +1554,6 @@
   <div class="modal">
     <div class="modal-title" id="export-modal-title">Inspection Report</div>
     <pre class="export-preview" id="export-preview"></pre>
-    <div id="export-notes-row" style="display:none; margin-bottom:12px;">
-      <button class="btn-modal-secondary" style="width:100%;" onclick="exportAllNotes()">
-        Export Notes Pages as Images
-      </button>
-    </div>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-export')">Close</button>
       <button class="btn-modal-primary" onclick="shareExport()">Export</button>
@@ -3303,42 +3312,7 @@ function openExport() {
   const addr = state.fields['subject.address'] || 'Inspection Report';
   const street = addr.split(',')[0].trim();
   document.getElementById('export-modal-title').textContent = street;
-  // Show notes export button only if there are drawn pages
-  const drawnPages = state.notes.pages.filter(Boolean).length;
-  document.getElementById('export-notes-row').style.display = drawnPages > 0 ? 'block' : 'none';
   openModal('modal-export');
-}
-
-async function exportAllNotes() {
-  // Capture current page first
-  captureNotesPage();
-  const addr = state.fields['subject.address'] || 'FieldBook';
-  const street = addr.split(',')[0].trim();
-  const drawnPages = state.notes.pages.map((dataURL, i) => ({ dataURL, i })).filter(p => p.dataURL);
-  if (drawnPages.length === 0) { alert('No drawn notes pages to export.'); return; }
-  // Convert all dataURLs to File objects
-  const files = await Promise.all(drawnPages.map(async ({ dataURL, i }) => {
-    const res = await fetch(dataURL);
-    const blob = await res.blob();
-    const pageNum = i + 1;
-    return new File([blob], street + '_Notes_p' + pageNum + '.png', { type: 'image/png' });
-  }));
-  if (navigator.canShare && navigator.canShare({ files })) {
-    try {
-      await navigator.share({ files });
-    } catch (err) {
-      if (err.name !== 'AbortError') alert('Could not share notes pages.');
-    }
-  } else {
-    // Fallback — download each page individually
-    files.forEach(file => {
-      const url = URL.createObjectURL(file);
-      const a = document.createElement('a');
-      a.href = url; a.download = file.name; a.style.display = 'none';
-      document.body.appendChild(a); a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-    });
-  }
 }
 
 function buildExportText() {
@@ -3452,13 +3426,6 @@ function buildExportText() {
     });
   });
 
-  const drawnPages = state.notes.pages.filter(Boolean).length;
-  if (drawnPages > 0) {
-    lines.push('');
-    lines.push('─'.repeat(44));
-    lines.push('Notes: ' + drawnPages + ' page(s) of handwritten notes.');
-    lines.push('Use "Export Notes" below to export all pages as images.');
-  }
   lines.push('');
   lines.push('Generated: ' + new Date().toLocaleString());
 
@@ -3471,38 +3438,35 @@ function addLine(lines, label, ...vals) {
   lines.push(label.padEnd(20) + val);
 }
 
-function copyExport() {
-  const text = document.getElementById('export-preview').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('#modal-export .btn-modal-secondary:last-of-type');
-    const orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = orig, 1800);
-  });
-}
-
 async function shareExport() {
   const text = document.getElementById('export-preview').textContent;
   const addr = state.fields['subject.address'] || 'FieldBook';
   const street = addr.split(',')[0].trim();
-  const filename = street + '.txt';
-  const file = new File([text], filename, { type: 'text/plain' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+  const txtFile = new File([text], street + '.txt', { type: 'text/plain' });
+  const files = [txtFile];
+
+  // Always include notes pages if any exist
+  captureNotesPage();
+  const drawnPages = state.notes.pages
+    .map((dataURL, i) => ({ dataURL, i }))
+    .filter(p => p.dataURL);
+  if (drawnPages.length > 0) {
+    const imageFiles = await Promise.all(drawnPages.map(async ({ dataURL, i }) => {
+      const res = await fetch(dataURL);
+      const blob = await res.blob();
+      return new File([blob], street + '_Notes_p' + (i + 1) + '.png', { type: 'image/png' });
+    }));
+    files.push(...imageFiles);
+  }
+
+  if (navigator.canShare && navigator.canShare({ files })) {
     try {
-      await navigator.share({ files: [file] });
+      await navigator.share({ files });
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        // Fallback — copy to clipboard
-        navigator.clipboard.writeText(text);
-      }
+      if (err.name !== 'AbortError') fallbackDownload(street + '.txt', text);
     }
   } else {
-    // Fallback for non-Safari — copy to clipboard
-    navigator.clipboard.writeText(text);
-    const btn = document.querySelector('#modal-export .btn-modal-primary');
-    const orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = orig, 1800);
+    fallbackDownload(street + '.txt', text);
   }
 }
 
