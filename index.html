@@ -1540,10 +1540,14 @@
   <div class="modal">
     <div class="modal-title" id="export-modal-title">Inspection Report</div>
     <pre class="export-preview" id="export-preview"></pre>
+    <div id="export-notes-row" style="display:none; margin-bottom:12px;">
+      <button class="btn-modal-secondary" style="width:100%;" onclick="exportAllNotes()">
+        Export Notes Pages as Images
+      </button>
+    </div>
     <div class="modal-actions">
       <button class="btn-modal-secondary" onclick="closeModal('modal-export')">Close</button>
-      <button class="btn-modal-secondary" onclick="copyExport()">Copy Text</button>
-      <button class="btn-modal-primary" onclick="shareExport()">Share</button>
+      <button class="btn-modal-primary" onclick="shareExport()">Export</button>
     </div>
   </div>
 </div>
@@ -3299,7 +3303,42 @@ function openExport() {
   const addr = state.fields['subject.address'] || 'Inspection Report';
   const street = addr.split(',')[0].trim();
   document.getElementById('export-modal-title').textContent = street;
+  // Show notes export button only if there are drawn pages
+  const drawnPages = state.notes.pages.filter(Boolean).length;
+  document.getElementById('export-notes-row').style.display = drawnPages > 0 ? 'block' : 'none';
   openModal('modal-export');
+}
+
+async function exportAllNotes() {
+  // Capture current page first
+  captureNotesPage();
+  const addr = state.fields['subject.address'] || 'FieldBook';
+  const street = addr.split(',')[0].trim();
+  const drawnPages = state.notes.pages.map((dataURL, i) => ({ dataURL, i })).filter(p => p.dataURL);
+  if (drawnPages.length === 0) { alert('No drawn notes pages to export.'); return; }
+  // Convert all dataURLs to File objects
+  const files = await Promise.all(drawnPages.map(async ({ dataURL, i }) => {
+    const res = await fetch(dataURL);
+    const blob = await res.blob();
+    const pageNum = i + 1;
+    return new File([blob], street + '_Notes_p' + pageNum + '.png', { type: 'image/png' });
+  }));
+  if (navigator.canShare && navigator.canShare({ files })) {
+    try {
+      await navigator.share({ files });
+    } catch (err) {
+      if (err.name !== 'AbortError') alert('Could not share notes pages.');
+    }
+  } else {
+    // Fallback — download each page individually
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      const a = document.createElement('a');
+      a.href = url; a.download = file.name; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+    });
+  }
 }
 
 function buildExportText() {
@@ -3418,8 +3457,7 @@ function buildExportText() {
     lines.push('');
     lines.push('─'.repeat(44));
     lines.push('Notes: ' + drawnPages + ' page(s) of handwritten notes.');
-    lines.push('To export notes pages as images, open the Notes panel');
-    lines.push('and use the download icon in the toolbar for each page.');
+    lines.push('Use "Export Notes" below to export all pages as images.');
   }
   lines.push('');
   lines.push('Generated: ' + new Date().toLocaleString());
